@@ -101,11 +101,11 @@ The OpenAI key stays on the Python server, outside source control and browser re
 
 ## Phase 6 — Complete MVP review, UI polish, and reliability
 
-**Build:** Finish the reference-based design across all six views. Improve graph readability, keyboard access and text alternatives, progress/error messages, and smaller screens. Add Markdown/JSON export with evidence and revision, local data deletion, setup instructions, and concise support/coverage notes.
+**Built scope:** Larger map labels, readable component jump, fit control and keyboard relationship list; source modal with native focus/Escape behavior. Browser-generated Markdown/JSON includes capture identity, confidence, gaps, hashes and source citations without full source/snippet contents. Confirmed deletion removes saved source and metadata only within the current workspace and clears local references. Partial deletion failures are explicit and retryable. Shared API errors and scan-cancel state improve reliability. README/setup/limitations are updated.
 
 **You will see:** One coherent product: open a repo, explore six connected views, ask a question, change audience, inspect evidence, compare history, and export a result.
 
-**Check before final approval:** Run the whole journey on the sample app and agreed real repositories. Measure first analysis and refresh times; inspect a sample of edges and answer citations; confirm secrets/key are absent from browser output and logs; confirm analyzed code remains untouched. Check API errors, missing Git, unsupported files, deletion/export, restart persistence, and core keyboard navigation. Report the measured limits rather than claiming universal codebase understanding.
+**Checks:** 41 backend tests and 10 frontend tests, Ruff, type checking and production build pass. Deletion tests use mocked REST storage/metadata responses; live persistence/deletion awaits the separate Supabase project. Export tests cover citations, escaping, missing graphs, confidence/gaps/hashes and source-body omission. Browser results are recorded in the Phase 6 verification report. No full accessibility audit, arbitrary-repository benchmark or live model/persistence validation is claimed.
 
 **Final handoff:** Runnable local web MVP, setup instructions, coverage/limitations, and a short results report. This phase does not automatically authorize public deployment.
 

@@ -70,7 +70,12 @@ export default function Home() {
   }, []);
   useEffect(() => { if (modal) dialog.current?.showModal(); else dialog.current?.close(); }, [modal]);
   useEffect(() => { setLimit(60); }, [search, folder]);
-  useEffect(() => { if (selected) sourceDialog.current?.showModal(); }, [selected]);
+  useEffect(() => {
+    if (!selected) return;
+    const opener = document.activeElement as HTMLElement;
+    sourceDialog.current?.showModal();
+    return () => { if (opener?.isConnected) opener.focus(); };
+  }, [selected]);
 
   function keepSnapshot(value:Project) {
     setSnapshots(previous=>previous.some(item=>item.id===value.id) ? previous.map(item=>item.id===value.id?value:item) : previous.length<8 ? [...previous,value] : previous);
@@ -206,6 +211,11 @@ export default function Home() {
       <div className="upload-disclosure"><strong>Before uploading</strong><p>Remove secrets and private credentials from the ZIP. The entire archive is sent to the analysis server. Known secret files are skipped during analysis, which cannot undo their upload.</p><p>{storage === "supabase" ? "Captured, masked source previews are saved in your configured Supabase project." : "Supabase is not connected: source previews stay in this page until reload. The server uses temporary files during scanning."} OpenAI receives reviewed excerpts only after you explicitly agree in the product views.</p></div>
       {error && <p role="alert" className="modal-error">{error}</p>}<div className="modal-actions"><button className="button ghost" onClick={() => setModal(false)}>Cancel</button><button className="button primary" disabled={!file || !!busy} onClick={() => scan()}>Upload & scan<Icon name="arrow" size={16}/></button></div>
     </dialog>
-    {selected && <dialog ref={sourceDialog} className="source-panel" aria-label="Source evidence" onCancel={()=>setSelected(null)}><div className="source-header"><div><span className="eyebrow">CAPTURED SOURCE</span><h2>{selected.path}</h2></div><button onClick={() => setSelected(null)} aria-label="Close source"><Icon name="close"/></button></div><div className="source-meta">{selected.language} · {selected.lines} lines · SHA256 {selected.hash.slice(0,12)}…<p>Read-only snapshot. Known secret patterns masked.</p><p>{sourceProject?.name} · captured {sourceProject && new Date(sourceProject.created_at).toLocaleString()}</p></div><div className="code-scroll"><pre>{sourceLines.slice(sourcePage * 200, (sourcePage + 1) * 200).map((line,index) => <div className={`code-line ${highlight && sourcePage * 200 + index + 1 >= highlight.start && sourcePage * 200 + index + 1 <= highlight.end ? "evidence-line" : ""}`} key={index}><span>{sourcePage * 200 + index + 1}</span><code>{line || " "}</code></div>)}</pre></div><div className="source-pagination"><button disabled={!sourcePage} onClick={() => setSourcePage(sourcePage - 1)}>Previous</button><span>Lines {sourceLines.length ? sourcePage * 200 + 1 : 0}–{Math.min((sourcePage + 1) * 200,sourceLines.length)}</span><button disabled={(sourcePage + 1) * 200 >= sourceLines.length} onClick={() => setSourcePage(sourcePage + 1)}>Next</button></div></dialog>}
+    {selected && <dialog ref={sourceDialog} className="source-panel" aria-label="Source evidence" onCancel={()=>setSelected(null)} onKeyDown={event=>{
+      if(event.key !== "Tab") return;
+      const targets = event.currentTarget.querySelectorAll<HTMLElement>("button:not(:disabled), [tabindex='0']");
+      const first = targets[0], last = targets[targets.length-1];
+      if(document.activeElement === (event.shiftKey ? first : last)) {event.preventDefault();(event.shiftKey ? last : first)?.focus();}
+    }}><div className="source-header"><div><span className="eyebrow">CAPTURED SOURCE</span><h2>{selected.path}</h2></div><button onClick={() => setSelected(null)} aria-label="Close source"><Icon name="close"/></button></div><div className="source-meta">{selected.language} · {selected.lines} lines · SHA256 {selected.hash.slice(0,12)}…<p>Read-only snapshot. Known secret patterns masked.</p><p>{sourceProject?.name} · captured {sourceProject && new Date(sourceProject.created_at).toLocaleString()}</p></div><div className="code-scroll" tabIndex={0} aria-label="Captured source lines"><pre>{sourceLines.slice(sourcePage * 200, (sourcePage + 1) * 200).map((line,index) => <div className={`code-line ${highlight && sourcePage * 200 + index + 1 >= highlight.start && sourcePage * 200 + index + 1 <= highlight.end ? "evidence-line" : ""}`} key={index}><span>{sourcePage * 200 + index + 1}</span><code>{line || " "}</code></div>)}</pre></div><div className="source-pagination"><button disabled={!sourcePage} onClick={() => setSourcePage(sourcePage - 1)}>Previous</button><span>Lines {sourceLines.length ? sourcePage * 200 + 1 : 0}–{Math.min((sourcePage + 1) * 200,sourceLines.length)}</span><button disabled={(sourcePage + 1) * 200 >= sourceLines.length} onClick={() => setSourcePage(sourcePage + 1)}>Next</button></div></dialog>}
   </div>;
 }
