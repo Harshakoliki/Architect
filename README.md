@@ -259,7 +259,7 @@ Research/configuration review as of **2026-10-10**:
 
 ## Hackathon submission checklist
 
-- [ ] Publish the repository and copy its real GitHub URL.
+- [x] Publish the public repository: https://github.com/Harshakoliki/Architect
 - [x] Install dependencies and run both services locally on macOS; fresh-machine setup has not been independently checked.
 - [x] Include a screenshot or short recording of the real sample/upload flow.
 - [ ] Add a live URL only after deploying and testing it.

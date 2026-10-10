@@ -27,8 +27,12 @@ TypeScript type checking and the Next.js production build pass. Live cloud, prov
 - Dependencies filters the sample to 6 nodes / 4 module relationships. Searching `storage` narrows it to 3 nodes / 2 relationships.
 - Turning Flow motion off removes the animated-edge class; source evidence highlights frontend line 9 correctly.
 - The small-screen selector switches back to architecture, and the page has no horizontal overflow at 390px.
-- Focus interaction and final charcoal/red screenshot are checked in the browser; SVG path targeting can be awkward in automation, so the accessible relationship list provides the same evidence action.
+- Smooth focus zoom was verified from approximately 0.60× to 0.89× for the selected import pair. Final charcoal/red screenshot saved. SVG path targeting can be awkward in automation; the accessible relationship list provides the same evidence action.
 
 ## Scope limits
 
 Static supported patterns only. No runtime trace, symbol call graph, deployment topology, complete Git/Next/Python resolver, inherited/JSONC configs, full six-layer semantics, or OpenAI calls. HTTP method/path coincidence is not proof of deployed connectivity. Module references may be external or unresolved; their source import is the observation. Cloud persistence and a deployed URL are not claimed as tested.
+
+## Publication
+
+Public repository created and pushed on 2026-10-10: https://github.com/Harshakoliki/Architect . No live deployment is claimed. Credential-pattern review found only the intentionally fake masking-test private-key block and test API keys; no real credentials or private environment files were published.
