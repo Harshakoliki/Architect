@@ -10,6 +10,14 @@ Implementation baseline: [Detailed Technical Requirements Document](architect-mv
 
 Visual quality is required from Phase 1 onward. Use the supplied UI references to establish the direction before frontend implementation; review readable grouping, selected paths, typography, spacing, transitions, and evidence-panel behavior as each view is introduced. Phase 6 refines and verifies the complete experience.
 
+## Why these phases matter
+
+**Problem:** Product knowledge is scattered across code and people, so a simple “How does this work?” question can become an investigation.
+
+**Solution:** Build from real source evidence to connected maps, then product flows, natural-language exploration, and finally snapshot evolution. Each phase makes one part of that investigation easier to follow and check.
+
+**Benefit:** The user progresses from finding relevant code to explaining a feature and discussing what changed. These are acceptance goals; speed and collaboration gains still need user validation. The current shipped scope and boundaries are documented in the README.
+
 ## Working agreement
 
 Build one phase at a time. After each phase, stop and give the user:

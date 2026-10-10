@@ -1,22 +1,50 @@
 # Architect
 
-### See your codebase clearly.
+### Understand the product behind your code.
+
+**Turn “How does this work?” into a visual flow you can explore and check against the source.**
 
 **Repository:** [Harshakoliki/Architect](https://github.com/Harshakoliki/Architect)
 
-Architect is an evidence-first visual workspace for understanding software. The long-term goal is to turn a repository into six connected perspectives: **architecture, user journeys, data flows, feature relationships, dependencies, and evolution**.
+## The problem: having the code is only the beginning
 
-This hackathon repository contains the **Phase 4 MVP checkpoint**: upload a small repository ZIP, explore imports and declared routes, inspect code-linked evidence, build inferred feature, journey, and data-flow views from bounded source excerpts, ask source-grounded flow questions, and switch between Plain English and Technical explanations. The interface follows a charcoal-and-red visual language inspired by architectural diagrams and product flow maps.
+A customer uploads a document. Which screen starts it? Which API receives it? Where do the bytes go? Which files should someone inspect before changing the feature?
 
-> **Current status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence panel, feature/source map, user journeys, and data flows. OpenAI Structured Outputs integration is implemented and tested with the real SDK against mocked provider responses; **a live OpenAI call has not been verified because no API key is configured**. A clearly labeled hand-authored sample demonstrates the product views without a key. A limited sample question finder and Plain English / Technical switch work without a key. OpenAI-backed questions are implemented with citation/navigation checks; live behavior remains unverified. GitHub ingestion and history remain planned. Optional Supabase persistence awaits the owner's separate project. Hosting is intentionally deferred.
+Answering one product question can mean jumping between folders, tracing imports, reading handlers, checking documentation, and asking the person who remembers how it was built. A new developer needs a starting point. A product manager needs an explanation. A founder needs a clear picture of what the team has shipped.
+
+**When that knowledge is scattered across files and people, understanding the product becomes repeated detective work.** Onboarding, change discussions, and technical explanations all compete for the same scarce resource: the team's attention.
+
+## The solution: make the connections visible
+
+Architect turns supported source relationships and cited product interpretations into an interactive visual workspace. Upload a small repository ZIP, explore the parts and their connections, ask a flow question, and click a card or line to inspect the source behind it.
+
+For example, ask **“Show me everything involved when a customer uploads a document.”** The bundled demo opens an inferred path from file selection to an API candidate, an in-memory record, and user feedback. Each step has supporting source links, and missing context stays visible.
+
+Switch between **Plain English and Technical** to explain the same map at different levels of detail. Run the web app locally for source scanning; optional OpenAI interpretation sends reviewed excerpts only after explicit consent.
+
+The product vision connects six perspectives: **architecture, user journeys, data flows, feature relationships, dependencies, and evolution**. The current checkpoint implements the first five at a documented, limited depth; evolution is upcoming.
+
+## The payoff: a clearer starting point, a shared explanation
+
+| When you need to… | Architect helps you… | Why that matters |
+|---|---|---|
+| Get oriented in unfamiliar code | Find supported modules, routes and their direct connections | Begin with a navigable map and relevant source |
+| Understand a feature | Follow a proposed user journey or data flow with citations | Connect implementation details to a product action |
+| Discuss a change | Inspect direct dependencies and unresolved boundaries | Bring concrete connections and open questions to the review |
+| Explain the product to someone else | Switch explanation level while keeping the same evidence | Give developers and nontechnical teammates a common reference |
+| Check an explanation | Open the source behind a card, connection or answer | Review the reasoning before relying on it |
+
+These are the outcomes we are building toward and validating. We have not measured time savings, reduced defects, or team adoption. Static relationships and inferred journeys cannot establish complete change impact or runtime behavior.
+
+**Our promise: make the product easier to understand, and make the explanation inspectable.**
+
+## Try the current MVP
+
+This repository contains the **Phase 4 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
+
+> **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. GitHub ingestion and history remain planned. Optional Supabase persistence awaits the owner's separate project. Hosting is deferred; hosted operation would send source to the server.
 
 ![Architect product views and source evidence](outputs/architect-phase-4.jpg)
-
-## Why this exists
-
-Reading a new codebase takes time. A developer needs implementation details; a founder or product manager needs to understand what the software does and how changes affect it. Architect aims to give them one shared model with different levels of explanation and code-linked evidence.
-
-We start with a simple promise: **show what the source actually supports, label inference, and make missing information visible.** A beautiful diagram is useful only when its connections are trustworthy.
 
 ## What works today
 
@@ -270,6 +298,7 @@ See [`outputs/phase-4-verification.md`](outputs/phase-4-verification.md) for the
 - [Technical requirements and current hosting amendment](outputs/architect-mvp-trd.md)
 - [Six-phase implementation plan](outputs/mvp-build-plan.md)
 - [Visual direction and reference decisions](outputs/design-direction.md)
+- [Product story and reusable pitch](outputs/product-story.md)
 
 The original PRD/TRD contain the broader vision. The hosting amendment and this README describe the current implementation. Roadmap statements are not completed features.
 

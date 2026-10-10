@@ -2,8 +2,20 @@
 
 **Status:** Founder working draft
 **Research as of:** 10 October 2026
-**Working name:** Visual Product Intelligence (VPI)
+**Working name:** Architect — Visual Product Intelligence (VPI)
 **Document purpose:** Define the product promise, boundaries, testable first release, and decisions required before implementation. Product targets and prices below are hypotheses, not observed market facts.
+
+## Founder narrative: problem → solution → benefit
+
+**Problem.** A team can own every line of its code and still struggle to explain how a product feature works. The answer is spread across UI code, routes, services, configuration, documentation, and the people who remember the connections. Every newcomer or change discussion can reopen the same investigation. The pain to validate is repeated reconstruction of product knowledge and dependence on a few knowledgeable people.
+
+**Solution.** Architect makes those connections explorable through a visual product model, with source-linked evidence, explicit inference and visible gaps. A user starts from a feature or ordinary-language question, follows its supported path, and switches between technical detail and a plain explanation.
+
+**Benefit.** Give developers a useful starting point, give product teams a shared reference, and give everyone a way to check the explanation. Target outcomes are shorter orientation tasks, clearer change discussions and less repeated explanation work; none is a measured result yet. The wider vision adds history so this understanding can evolve with the product.
+
+**Positioning line:** Understand the product behind your code.
+
+**Implementation note:** This PRD describes the broader local-first product vision. The current Phase 4 web MVP uses ZIP ingestion, optional Supabase and explicitly opted-in OpenAI; it has no GitHub ingestion, history or local companion yet. The [README](README.md) and [TRD amendment](outputs/architect-mvp-trd.md) define shipped behavior and actual data boundaries. Do not present vision requirements as completed capabilities.
 
 ## 1. Executive decision
 

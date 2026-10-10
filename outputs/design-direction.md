@@ -2,6 +2,18 @@
 
 Date: 2026-10-10. Reference lock: user-provided images and permission to start building.
 
+## What the interface should communicate
+
+**Problem:** A dense codebase can leave people without a clear starting point.
+
+**Solution:** Use readable charcoal cards, restrained red paths, circular ports and source evidence to help a person follow one question at a time. Keep inferred connections and unknowns visible.
+
+**Benefit:** The user can find a route through the information, explain it to another person, and inspect the supporting code. Motion guides attention along a selected connection; it must not imply observed runtime traffic.
+
+Product copy follows **problem → solution → benefit**. Lead with the question people struggle to answer, show how the map helps, and close with the practical payoff. Prefer specific actions over broad claims about intelligence or productivity. Quantified gains require measurement; planned features remain labeled as planned.
+
+The final charcoal/red correction below is authoritative; earlier palette notes are historical.
+
 ## Decisions
 
 - Reference 3: dark canvas, rounded flow nodes, curved connections, citron selected path.

@@ -2,9 +2,17 @@
 
 **Version:** 0.1, implementation baseline
 **Date / documentation checked:** 10 October 2026
-**Status:** Phases 1–3 implemented; live AI verification awaits a private key; later phases await approval. Section 0 and the README define current behavior.
+**Status:** Phases 1–4 implemented; live AI verification awaits a private key; later phases await approval. Section 0 and the README define current behavior.
 **Product:** Visual Product Intelligence, working product name Architect
 **Companion documents:** [Product requirements](../visual-product-intelligence-prd.md), [six-phase build plan](mvp-build-plan.md)
+
+## Product outcome this design must serve
+
+**Problem:** Understanding one product action can require reconstructing connections across source files and asking the people who know the system. A file inventory alone leaves that work with the user.
+
+**Solution:** Combine supported static relationships, cited product interpretations, flow questions and audience-specific presentation in one inspectable visual workspace. Every technical decision must help someone move from a product question to relevant source without hiding uncertainty.
+
+**Benefit:** Users get a clearer place to begin, a flow they can review, and a shared explanation for the discussion. Evaluate task completion, citation usefulness and comprehension before claiming faster onboarding or better change outcomes. History is the next planned extension.
 
 ## 0. Hosting amendment — current implementation baseline (2026-10-10)
 
