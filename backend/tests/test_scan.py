@@ -175,3 +175,13 @@ def test_supabase_load_scopes_metadata_then_reads_private_capture(monkeypatch):
     assert project['persisted'] is True
     assert project['contents'] == {'file-id': 'captured source'}
     assert 'workspace_id' not in project and 'source_key' not in project
+
+
+def test_updated_sample_endpoint_is_labeled_and_has_captured_source(client):
+    response = client.post('/api/sample-next')
+    assert response.status_code == 200
+    project = json.loads(response.text.splitlines()[-1])['project']
+    assert project['name'] == 'document-app · updated sample'
+    assert project['sample'] is False  # The original annotated product interpretation must not attach.
+    assert any(file['path'] == 'api/audit.py' for file in project['files'])
+    assert '/api/documents/upload' in ''.join(project['contents'].values())

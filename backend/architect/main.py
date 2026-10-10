@@ -26,7 +26,7 @@ from .product import (
 from .questions import QuestionRequest, answer_question
 from .scanner import ScanError, redact, scan
 
-app = FastAPI(title="Architect", version="0.4.0")
+app = FastAPI(title="Architect", version="0.5.0")
 SAMPLE = Path(__file__).parent.parent / "fixtures" / "document-app"
 
 
@@ -44,7 +44,7 @@ async def server_boundary(request: Request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"storage": "supabase" if db.configured() else "preview", "phase": 4,
+    return {"storage": "supabase" if db.configured() else "preview", "phase": 5,
             "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
             "ai_model": os.getenv("OPENAI_MODEL") or "gpt-6.1-sol"}
 
@@ -73,14 +73,14 @@ def get_project(project_id: UUID, request: Request):
     return result
 
 
-def events(data: bytes | None, name: str, workspace: str):
+def events(data: bytes | None, name: str, workspace: str, sample_root: Path = SAMPLE):
     def event(value):
         return json.dumps(value) + "\n"
 
     try:
         yield event({"stage": "Scanning source files"})
         with TemporaryDirectory(prefix="architect-") as directory:
-            root, excluded = unpack(data, Path(directory)) if data is not None else (SAMPLE, [])
+            root, excluded = unpack(data, Path(directory)) if data is not None else (sample_root, [])
             files, summary = scan(root)
             for entry in excluded:
                 reason = entry["reason"]
@@ -106,7 +106,7 @@ def events(data: bytes | None, name: str, workspace: str):
                 project["warning"] = "Scan complete, but saving failed. This is a temporary preview. Check Supabase setup."
         project["contents"] = contents
         project["ai_context"] = context
-        project["sample"] = data is None
+        project["sample"] = data is None and sample_root == SAMPLE
         yield event({"stage": "complete", "project": project})
     except ScanError as error:
         yield event({"stage": "error", "message": str(error)})
@@ -115,6 +115,13 @@ def events(data: bytes | None, name: str, workspace: str):
 @app.post("/api/sample")
 def sample(request: Request):
     return StreamingResponse(events(None, "document-app · sample", request.state.workspace),
+                             media_type="application/x-ndjson", headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/sample-next")
+def sample_next(request: Request):
+    return StreamingResponse(events(None, "document-app · updated sample", request.state.workspace,
+                                    SAMPLE.parent / "document-app-v2"),
                              media_type="application/x-ndjson", headers={"Cache-Control": "no-store"})
 
 

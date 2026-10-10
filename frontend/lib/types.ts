@@ -1,0 +1,9 @@
+export type Evidence = { file_id: string; path: string; start_line: number; end_line: number; extractor: string; source_hash: string };
+export type GraphNode = { id: string; kind: string; label: string; file_id?: string; line?: number; language?: string; description?: string; confidence?: string; evidence?: Evidence[] };
+export type GraphEdge = { id: string; source: string; target: string; kind: string; confidence: string; label?: string; evidence: Evidence[] };
+export type GraphData = { nodes: GraphNode[]; edges: GraphEdge[]; gaps: (Partial<Evidence> & { message: string })[]; analyzer_version: string; parsed_files: number; coverage: string };
+export type SourceFile = { id: string; path: string; language: string; size: number; lines: number; hash: string };
+export type Summary = { file_count: number; total_bytes: number; line_count: number; languages: Record<string, number>; frameworks: string[]; skipped_count: number; skip_reasons: Record<string, number>; coverage: string };
+export type Snapshot = { id: string; name: string; files: SourceFile[]; summary: Summary; contents: Record<string, string>; persisted: boolean; graph?: GraphData; warning?: string; created_at: string };
+export type Change = "added" | "removed" | "updated";
+export type GraphChanges = { nodes: Record<string,Change>; edges: Record<string,Change> };

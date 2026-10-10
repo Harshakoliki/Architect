@@ -7,7 +7,7 @@
 
 ## Founder narrative: problem → solution → benefit
 
-**Problem.** A team can own every line of its code and still struggle to explain how a product feature works. The answer is spread across UI code, routes, services, configuration, documentation, and the people who remember the connections. Every newcomer or change discussion can reopen the same investigation. The pain to validate is repeated reconstruction of product knowledge and dependence on a few knowledgeable people.
+**Problem.** Frameworks and AI coding tools help more people turn ideas into working software. Yet a builder can ship an application without a clear picture of how its screens, APIs, modules and storage communicate. A solo builder or team can own every line of its code and still struggle to explain how a product feature works. The answer is spread across UI code, routes, services, configuration, documentation, and the people who remember the connections. Every newcomer or change discussion can reopen the same investigation. The pain to validate is repeated reconstruction of product knowledge and dependence on a few knowledgeable people.
 
 **Solution.** Architect makes those connections explorable through a visual product model, with source-linked evidence, explicit inference and visible gaps. A user starts from a feature or ordinary-language question, follows its supported path, and switches between technical detail and a plain explanation.
 
@@ -15,7 +15,7 @@
 
 **Positioning line:** Understand the product behind your code.
 
-**Implementation note:** This PRD describes the broader local-first product vision. The current Phase 4 web MVP uses ZIP ingestion, optional Supabase and explicitly opted-in OpenAI; it has no GitHub ingestion, history or local companion yet. The [README](README.md) and [TRD amendment](outputs/architect-mvp-trd.md) define shipped behavior and actual data boundaries. Do not present vision requirements as completed capabilities.
+**Implementation note:** This PRD describes the broader local-first product vision. The current Phase 5 web MVP uses ZIP ingestion, optional Supabase and explicitly opted-in OpenAI; it includes session-based captured-version comparison, but no GitHub ingestion, commit history, automatic refresh or local companion yet. The [README](README.md) and [TRD amendment](outputs/architect-mvp-trd.md) define shipped behavior and actual data boundaries. Do not present vision requirements as completed capabilities.
 
 ## 1. Executive decision
 

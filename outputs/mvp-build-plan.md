@@ -2,7 +2,7 @@
 
 Date: 10 October 2026
 
-Status: Phase 1 approved. Phase 2 built with the static coverage documented in README and its verification report. Phases 3 and 4 are built; live OpenAI verification awaits a private key. Phase 5 requires the owner’s confirmation.
+Status: Phase 1 approved. Phase 2 built with the static coverage documented in README and its verification report. Phases 3–5 are built; live OpenAI verification awaits a private key. Phase 6 requires the owner’s confirmation.
 
 **Hosting amendment:** Vercel + Supabase replace the original local-only runtime below. ZIP upload replaces local-path registration. Optional Supabase stores captured masked source; without credentials, previews last until reload. Hosted code leaves the device. Phase 5 starts with uploaded snapshot comparisons; Git refresh/history and local watching require later GitHub/companion integrations. See TRD Section 0 and README for the authoritative current baseline.
 
@@ -87,15 +87,17 @@ The OpenAI key stays on the Python server, outside source control and browser re
 
 **Next phase in simple words:** See how the map changes as code changes, and compare it with earlier versions.
 
-## Phase 5 — Live refresh and product history
+## Phase 5 — Captured-version history and comparison
 
-**Build:** File-change detection with debounced refresh, visible indexing status, and revision snapshots. Read selected older Git revisions without checking out or changing the user's worktree. Add a chronological timeline, comparison of two indexed states, and highlighted added/removed/changed entities and relationships. Refresh invalidated explanations and mark stale answers. Preserve corrections where anchors still match and flag broken anchors.
+**Built scope:** Retain up to eight scans in the open dashboard, order them by capture time, and compare two explicitly selected versions. Highlight added/removed components and connections, plus source/evidence updates. Reuse the current source viewer with version-specific content and hashes. Add a minimal landing page with Get started → dashboard and remove the custom emblem.
 
-**You will see:** Change a route or dependency and watch the map update. Pick two indexed commits and inspect how an architecture or feature flow changed. A folder without Git still supports analysis and subsequent local snapshots, with Git history explicitly unavailable.
+**You will see:** Open the original sample, choose Live changes → Try updated sample, and inspect one added file, one removed file, three modified files and eight relationship changes. Switch Before/After maps or open the source captured in either version. The new sample remains source-only and is never executed by analysis.
 
-**Check before approval:** Introduce a known change, deletion, and rename in a controlled fixture. Verify graph deltas, revision-correct evidence, stale-result handling, interrupted indexing recovery, and no checkout or source mutation. Reopening the app preserves stored history. Explain analyzer-version changes rather than mislabeling them as product changes.
+**Checks:** Focused tests cover identical captures, file addition/removal/hash changes, rename representation, route line movement, changed routes, analyzer incompatibility and duplicate evidence edges. Browser checks verify the original and updated route content opens from the corresponding source link. Analyzer version mismatch withholds structural comparison. Original snapshots remain unchanged.
 
-**Next phase in simple words:** Make the complete experience easy to use and verify it works on actual projects.
+**Limits:** No Git metadata, repository lineage verification, file watcher, automatic refresh, durable comparison tray or feature-level semantic diff. Capture times are not commit dates. Renames appear as removal/addition. Evidence updates do not establish changed behavior. Saved Supabase scans can be reopened into a new session tray when configured; interpretations are not transferred to a new version. The hosting amendment supersedes the original local watcher/Git plan.
+
+**Next phase in simple words:** Make the complete experience easy to share, clear to navigate, and reliable enough for the final demo.
 
 ## Phase 6 — Complete MVP review, UI polish, and reliability
 
@@ -113,6 +115,6 @@ The MVP succeeds when a user can analyze a real supported repository, understand
 
 ## Current state and deferred scope
 
-Phases 1–4 are implemented and the public repository is https://github.com/Harshakoliki/Architect . Phase 3 has a verified annotated sample and mocked real-SDK tests; a live OpenAI call awaits a private key. The owner deferred hosting and is handling submission. Phase 4 adds a verified sample flow finder, source-grounded OpenAI question integration, and an explanation switch. Phase 5 retains its confirmation gate. The hosting amendment and current README supersede older local-only descriptions above.
+Phases 1–5 are implemented and the public repository is https://github.com/Harshakoliki/Architect . Phase 3 has a verified annotated sample and mocked real-SDK tests; a live OpenAI call awaits a private key. The owner deferred hosting and is handling submission. Phase 4 adds a verified sample flow finder, source-grounded OpenAI question integration, and an explanation switch. Phase 5 adds captured-version comparison, correct before/after source evidence, and a minimal logo-free landing page. Phase 6 retains its confirmation gate. The hosting amendment and current README supersede older local-only descriptions above.
 
 Authentication, billing, hosted ingestion, remote repository authorization, production telemetry, arbitrary-language support, collaboration, and enterprise controls are deferred. Basic file validation, secret exclusion, API key protection, and evidence accuracy remain part of the MVP.

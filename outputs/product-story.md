@@ -6,7 +6,7 @@
 
 ## Problem
 
-A team can have access to its entire codebase and still struggle to answer a simple product question: “What happens when a customer uploads a document?”
+More people are building software with frameworks and AI coding tools. A working application can arrive before its builder fully understands how its screens, APIs, modules and storage communicate. A solo builder or team can have access to the entire codebase and still struggle to answer a simple product question: “What happens when a customer uploads a document?”
 
 The answer crosses screens, handlers, APIs and storage logic. Someone has to find the relevant files, reconstruct the connections, and translate the result for everyone else. When that knowledge lives across code and a few people's memories, onboarding and change discussions can repeatedly require the same investigation.
 
@@ -16,7 +16,7 @@ The cost is attention: developers interrupt their work to explain the system, ne
 
 Architect turns supported source relationships and cited product interpretations into an interactive visual workspace. Start with a repository, follow a feature through its proposed journey or data flow, and inspect the source behind each card or connection.
 
-Ask a product question to find an existing flow. Switch between Plain English and Technical detail to discuss the same evidence with different teammates. Observations, inferences and missing context remain visible throughout.
+Compare captured versions to keep earlier source context visible as the code changes. Ask a product question to find an existing flow. Switch between Plain English and Technical detail to discuss the same evidence with different teammates. Observations, inferences and missing context remain visible throughout.
 
 ## Benefits
 
@@ -34,7 +34,7 @@ Your team has the code. Understanding how the product fits together can still me
 
 ## Submission description
 
-Architect helps teams understand the product behind their code. Product knowledge is often scattered across files, documentation and people's memories, so even “What happens when a customer uploads a document?” can become an investigation. Architect turns supported source relationships into interactive architecture and dependency maps, then adds cited feature, journey and data-flow interpretations. Users can explore a flow question, inspect supporting source, and switch between Plain English and Technical detail. The goal is a clearer starting point for onboarding and a shared reference for product and change discussions. The Phase 4 MVP runs locally, accepts small repository ZIPs, and includes a no-key annotated demo. Optional OpenAI integration requires consent; live provider verification is pending. History and GitHub ingestion are planned.
+Architect helps teams understand the product behind their code. Product knowledge is often scattered across files, documentation and people's memories, so even “What happens when a customer uploads a document?” can become an investigation. Architect turns supported source relationships into interactive architecture and dependency maps, then adds cited feature, journey and data-flow interpretations. Users can explore a flow question, inspect supporting source, and switch between Plain English and Technical detail. The goal is a clearer starting point for onboarding and a shared reference for product and change discussions. The Phase 5 MVP runs locally, accepts small repository ZIPs, and includes a no-key annotated demo. Optional OpenAI integration requires consent; live provider verification is pending. Captured-version comparison is available; Git history and GitHub ingestion are planned.
 
 ## Forty-second demo story
 
@@ -43,7 +43,8 @@ Architect helps teams understand the product behind their code. Product knowledg
 3. **Show the question:** “Here is the document-upload question. This no-key sample finder opens a hand-authored, source-linked example; it is explicitly labeled.”
 4. **Follow the flow:** “Selection, request candidate, memory record, feedback. Click a connection to inspect its evidence.”
 5. **Switch explanation level:** “Same map and evidence, with detail suited to the person exploring it.”
-6. **Close with the payoff:** “A clearer place to begin, an explanation to share, and source you can check.”
+6. **Compare versions:** “The changed sample shows added and removed connections, with source from each captured version. These are capture times, not commits.”
+7. **Close with the payoff:** “A clearer place to begin, an explanation to share, and source you can check.”
 
 ## Messaging rules
 
@@ -51,6 +52,6 @@ Architect helps teams understand the product behind their code. Product knowledg
 - Lead with a recognizable product question and the effort required to answer it.
 - Describe benefits through actions people can perform; quantify outcomes only after measurement.
 - Distinguish the demonstrated sample, supported static extraction, and inferred AI output.
-- Call history, GitHub ingestion and the local companion planned until implemented.
+- Describe history as session-based captured-version comparison. Git history, automatic refresh, GitHub ingestion and the local companion remain planned.
 - Say local execution only when the services run locally. Hosted uploads reach a server; optional OpenAI sends reviewed context after consent. Do not claim all modes keep code on-device.
 - Treat animation as exploration guidance, never proof of a live runtime trace.

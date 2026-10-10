@@ -6,13 +6,17 @@
 
 **Repository:** [Harshakoliki/Architect](https://github.com/Harshakoliki/Architect)
 
-## The problem: having the code is only the beginning
+## The problem: we can build software before we fully understand it
 
-A customer uploads a document. Which screen starts it? Which API receives it? Where do the bytes go? Which files should someone inspect before changing the feature?
+More of us want to build something: a side project, an internal tool, a startup, an idea we finally want to make real. Frameworks and AI coding tools can help us turn that idea into working code. But getting an application to run leaves another question: **do we understand how its parts work together?**
 
-Answering one product question can mean jumping between folders, tracing imports, reading handlers, checking documentation, and asking the person who remembers how it was built. A new developer needs a starting point. A product manager needs an explanation. A founder needs a clear picture of what the team has shipped.
+A page calls an API. The API invokes a handler. That handler reads data, calls another module, or sends something to an external service. Those connections are spread across files, languages and frameworks. As the project grows, following how the code communicates can become harder than finding the code itself.
 
-**When that knowledge is scattered across files and people, understanding the product becomes repeated detective work.** Onboarding, change discussions, and technical explanations all compete for the same scarce resource: the team's attention.
+A customer uploads a document. Which screen starts it? Which API receives it? Where do the bytes go? What feedback returns to the user? Which files should someone inspect before changing the feature?
+
+For a solo builder, that can mean struggling to explain or extend something they have already shipped. For a new developer, it means searching for a starting point. For a founder or product manager, it means relying on someone else to translate the implementation. For a team, it can mean repeating the same explanation every time a person joins or a feature changes.
+
+**Building creates code. Understanding requires seeing the connections.** When product knowledge is scattered across files, documentation and people's memories, understanding the product becomes repeated detective work—especially when parts of it were generated or built by someone else.
 
 ## The solution: make the connections visible
 
@@ -22,7 +26,7 @@ For example, ask **“Show me everything involved when a customer uploads a docu
 
 Switch between **Plain English and Technical** to explain the same map at different levels of detail. Run the web app locally for source scanning; optional OpenAI interpretation sends reviewed excerpts only after explicit consent.
 
-The product vision connects six perspectives: **architecture, user journeys, data flows, feature relationships, dependencies, and evolution**. The current checkpoint implements the first five at a documented, limited depth; evolution is upcoming.
+The product vision connects six perspectives: **architecture, user journeys, data flows, feature relationships, dependencies, and evolution**. The current checkpoint includes all six at a documented, limited depth. Evolution compares explicitly captured versions; automatic refresh and Git history remain planned.
 
 ## The payoff: a clearer starting point, a shared explanation
 
@@ -33,6 +37,7 @@ The product vision connects six perspectives: **architecture, user journeys, dat
 | Discuss a change | Inspect direct dependencies and unresolved boundaries | Bring concrete connections and open questions to the review |
 | Explain the product to someone else | Switch explanation level while keeping the same evidence | Give developers and nontechnical teammates a common reference |
 | Check an explanation | Open the source behind a card, connection or answer | Review the reasoning before relying on it |
+| Understand what changed | Compare captured versions and open each version’s source | Keep earlier implementation context in the discussion |
 
 These are the outcomes we are building toward and validating. We have not measured time savings, reduced defects, or team adoption. Static relationships and inferred journeys cannot establish complete change impact or runtime behavior.
 
@@ -40,18 +45,23 @@ These are the outcomes we are building toward and validating. We have not measur
 
 ## Try the current MVP
 
-This repository contains the **Phase 4 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
+This repository contains the **Phase 5 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
 
-> **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. GitHub ingestion and history remain planned. Optional Supabase persistence awaits the owner's separate project. Hosting is deferred; hosted operation would send source to the server.
+> **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. Captured-version comparison is implemented; GitHub ingestion, commit history and automatic refresh remain planned. Optional Supabase persistence awaits the owner's separate project. Hosting is deferred; hosted operation would send source to the server.
 
-![Architect product views and source evidence](outputs/architect-phase-4.jpg)
+![Architect landing page — understand the product behind your code](outputs/architect-landing.jpg)
+
+![Architect dashboard — code connections and supporting source](outputs/architect-dashboard.jpg)
+
+[See the captured-version comparison](outputs/architect-phase-5.jpg). These screenshots show the current Phase 5 interface; older verification reports retain their historical screenshots.
 
 ## What works today
 
 | Capability | Current behavior |
 |---|---|
 | Repository input | ZIP upload, up to 3 MiB compressed / 20 MiB expanded / 3,000 entries |
-| Sample | Bundled document-upload source fixture, scanned by the real scanner |
+| Samples | Original and changed document-upload source fixtures, scanned by the real scanner |
+| Version comparison | Up to eight snapshots in the open dashboard, capture-time timeline, file and supported connection changes, before/after maps, version-specific source |
 | Safe scanning | No repository execution or dependency installation; rejects unsafe ZIP paths, duplicate entries, encrypted files, and symlinks |
 | Inventory | Real file/line counts, languages, and manifest-based framework detection |
 | Visualization | Interactive architecture/dependency graph, zoom/pan/focus, restrained red motion on selected connections, and searchable inventory |
@@ -64,7 +74,7 @@ This repository contains the **Phase 4 MVP checkpoint**. The no-key demo scans a
 | Evidence | Captured source viewer with line numbers, original file SHA256, and best-effort masking of known secret patterns |
 | Persistence | Optional private Supabase source storage and server-only scan metadata; preview mode works without credentials |
 | Workspace boundary | Random browser session cookie scopes saved scans; no account signup |
-| Presentation | Responsive dark interface, keyboard focus states, reduced motion, explicit empty/error/loading states |
+| Presentation | Minimal landing page → Get started → dashboard; charcoal/red maps, plain text product name, keyboard focus and reduced motion |
 
 **Architecture edges carry explicit meanings:** `imports`, `references`, `implemented by`, and `HTTP candidate`. Observed relationships, inferred candidates, and unresolved links are labeled. The separate inventory diagram means “contains.” Neither view is a runtime execution trace.
 
@@ -87,13 +97,13 @@ cd ..
 python3 dev.py
 ```
 
-Open **http://127.0.0.1:3000**. The Python API runs on port 8000. The launcher creates an in-memory internal service secret and passes it to both services. Press Ctrl+C to stop them.
+Open **http://127.0.0.1:3000** and click **Get started** to enter `/dashboard`. The Python API runs on port 8000. The launcher creates an in-memory internal service secret and passes it to both services. Press Ctrl+C to stop them.
 
 For configuration, copy `.env.example` to `.env` at the repository root. The launcher reads it. Keep real credentials out of Git. Shell environment variables take precedence over `.env`.
 
 ### Demo in two minutes
 
-1. Click **Explore sample**. This scans actual files from `backend/fixtures/document-app/`.
+1. On the landing page click **Get started**, then **Explore sample**. This scans actual files from `backend/fixtures/document-app/`.
 2. See seven real source files, three parsed source modules, and six extracted relationships.
 3. Select `web/upload.tsx`; choose **Focus this component** to zoom into its neighborhood.
 4. Click the red **HTTP candidate** connection to `POST /api/documents`. The evidence inspector shows both the literal frontend fetch and the FastAPI route. The inferred label explains what the match does not prove.
@@ -106,7 +116,9 @@ For configuration, copy `.env.example` to `.env` at the repository root. The lau
 11. Open **Feature relationships** to see candidate features connected to their cited files. Shared source does not establish a feature-to-feature dependency.
 12. In a product view, use **Try: customer uploads a document**, click **Explore flow**, review the citations, and click **Open this flow**. Try **Show document** to see a clarification, or **Show document upload data** to open the data-flow view.
 13. Switch **Plain English / Technical** above the map. The same nodes and selected evidence remain; descriptions, source-path detail and static connection wording change.
-14. Upload another small repository ZIP to inspect real supported source relationships. Configure OpenAI privately to generate product views for that upload.
+14. Open **Live changes**, then **Try updated sample**. Compare one added file, one removed file, three modified files, and eight supported relationship changes (three added, two removed, three with updated evidence).
+15. Use **Before source / After source** on `api/main.py` to inspect the original `/api/documents` route and the changed `/api/documents/upload` route. Switch **Before map / After map** to see removed and added declarations. Capture times are not commit dates.
+16. Upload another small repository ZIP to inspect real supported source relationships. In Live changes, **Upload next version** retains both scans for comparison. Configure OpenAI privately to generate product views for that upload.
 
 The fixture's SQL schema is intentionally unconnected to its in-memory storage. The analyzer does not invent a database connection just because a SQL file exists.
 
@@ -132,6 +144,18 @@ The bundled annotated sample uses a **limited lexical flow finder, not AI**. It 
 
 Plain English uses explanatory card descriptions and friendlier static connection labels. Technical uses cited paths/line numbers and available code previews. Both retain uncertainty labels, source access, graph IDs and current selection. This is a presentation switch, not a claim of different analysis quality.
 
+### Compare versions — no API key needed
+
+Each successful scan or reopened saved scan enters the comparison tray, up to **eight snapshots**. Open Live changes, select Before and After, then inspect changed files, connections or either map. Comparison runs in the browser over already captured scans; it makes no extra OpenAI call or upload.
+
+- File changes use paths and original SHA256 values. A rename appears as a removal and an addition.
+- Connections are compared by source, target and relationship kind. Moved route declarations retain their logical identity; changed evidence/line positions are labeled as updates, not automatically as new behavior.
+- Different or missing analyzer versions allow file comparison but withhold structural differences.
+- Each source link opens that version’s captured content and hash. Product interpretations stay attached to their own scan and are not carried into new code as verified explanations.
+- The timeline is ordered by **capture time**, not Git commit time. Repository lineage is not verified: choose versions of the same codebase.
+- The comparison tray lives only in the open dashboard. Reloading or navigating away clears it. Optional Supabase saves individual scans; reopen the desired scans to rebuild a comparison. **Remove from tray** removes only the in-memory comparison entry, not a saved server scan.
+- No automatic watcher, Git history, feature-level semantic diff, runtime observation or explanation of why a change happened is implemented.
+
 ### Create a small upload example
 
 For an existing repository, remove secrets, dependencies, generated outputs, large binaries, and unnecessary files **before** creating a ZIP. Architect skips common credential files during analysis, but the complete archive reaches the server before those exclusions are applied.
@@ -154,6 +178,7 @@ flowchart LR
 - **Next.js + TypeScript** render the application and proxy a fixed set of API routes. No service or Supabase secret is exposed to the browser.
 - **FastAPI + Python** validate uploads, read source, detect languages/frameworks, parse supported imports/routes, mask common secrets, and return real evidence graphs.
 - **Supabase Postgres** stores scan metadata, the evidence graph, and file inventory. **Supabase Storage** stores a gzip-compressed JSON bundle of captured, masked source. The original ZIP is not persisted.
+- Snapshot comparison is a pure browser-side diff; it reuses the existing graph canvas and source viewer. No comparison database, background job or additional provider call is needed.
 - Scanning happens within the active request. There is no daemon, detached job, or persistent server disk dependency.
 - Without Supabase configuration, results remain in the page's memory. Reloading loses the preview. Temporary extraction directories are removed after scanning.
 - Stopping the browser wait does not guarantee server work or an already-started save is canceled.
@@ -164,6 +189,9 @@ flowchart LR
 frontend/app/                  Browser interface and server proxy
 backend/architect/             ZIP boundary, scanner, analyzer, OpenAI product views, API, Supabase adapter
 backend/fixtures/document-app/ Source-only sample; never auto-executed
+backend/fixtures/document-app-v2/ Known changed sample for version comparison
+frontend/lib/history.ts         Browser-side snapshot comparison
+frontend/tests/                 Focused comparison tests
 backend/tests/                 Security, scanner, API, and persistence-boundary tests
 supabase/migrations/           Backend-only database/storage setup
 outputs/                       TRD, phased plan, design decisions, verification report
@@ -245,7 +273,7 @@ After each phase, explain what works, demonstrate it, report checks and limitati
 | 2 — Architecture & dependencies | Parse supported code relationships; evidence-backed graph | Built; narrowed static coverage documented below |
 | 3 — Product meaning | OpenAI-assisted feature, journey, and data-flow views | Built; live provider verification pending a private key |
 | 4 — Ask & explain | Natural-language flow exploration; technical/nontechnical switch | Built; sample/UI verified, live provider verification pending |
-| 5 — Evolution | Compare uploaded snapshots; Git history after GitHub ingestion | Planned |
+| 5 — Evolution | Captured snapshot timeline, file/connection diffs, version-correct evidence; minimal landing page | Built; Git history and automatic refresh deferred |
 | 6 — Complete demo | Accessibility/polish, export/deletion, reliability, full README update | Planned |
 
 ### Future access methods
@@ -258,7 +286,7 @@ After each phase, explain what works, demonstrate it, report checks and limitati
 
 ## Next product phase
 
-Phase 5 will compare uploaded snapshots and show added, removed and changed supported relationships. Git commit history and automatic refresh depend on later GitHub ingestion. Phase 5 requires the owner’s confirmation.
+Phase 6 will finish the demo: review the complete journey, improve accessibility and readability, add evidence-aware export and saved-scan deletion, and check reliability. It requires the owner’s confirmation. Hosting remains deferred. GitHub ingestion and a local companion are separate later work.
 
 ## Verification
 
@@ -268,12 +296,15 @@ uv run pytest -q
 uv run ruff check architect tests main.py
 cd ../frontend
 npm run typecheck
+npm test
 npm run build
 ```
 
 Tests cover safe extraction, expansion/upload limits, duplicate paths, secret masking and line preservation, ignore rules, real sample/upload scanning, API service/workspace boundaries, Supabase read scoping, and failed-save preview behavior. Live cloud persistence and deployed-provider behavior require a configured separate project and real deployment.
 
-See [`outputs/phase-4-verification.md`](outputs/phase-4-verification.md) for the actual handoff results. Coverage is deliberately narrow; it is not a security audit or proof that arbitrary repositories are completely understood.
+Phase 5 checks: **35 backend tests, six comparison tests, backend lint, frontend type checking and production build passed**. Browser checks covered landing → dashboard, both source versions, changed connection evidence, before/after maps and the same-snapshot empty state.
+
+See [`outputs/phase-5-verification.md`](outputs/phase-5-verification.md) for the actual handoff results. Coverage is deliberately narrow; it is not a security audit or proof that arbitrary repositories are completely understood.
 
 ## Known limitations
 
@@ -287,7 +318,7 @@ See [`outputs/phase-4-verification.md`](outputs/phase-4-verification.md) for the
 - UTF-8 text only; binary, large, generated, and unsupported files are omitted. The skip report is bounded to 200 examples.
 - Nested `.gitignore` is supported; submodule resolution and full Git global ignore semantics are not.
 - Original source hashes identify uploaded bytes; displayed/saved contents may be masked and therefore differ from that hash. Masking preserves line positions for recognized patterns.
-- Snapshots describe captured source, not observed production execution or runtime traces.
+- Snapshots describe captured source, not observed production execution or runtime traces. Comparison is session-only, bounded to eight entries, and does not verify repository lineage. A source/evidence update is not proof of a behavior change.
 - Supabase outages preserve a temporary preview and show a warning; they do not produce a false successful-save state.
 - The frontend shows the first 60 matching files and loads more on demand; source is paged in 200-line sections.
 - No multi-user account guarantees, durable background processing, or public resource quotas in this phase.
@@ -323,7 +354,7 @@ Research/configuration review as of **2026-10-10**:
 - [x] Install dependencies and run both services locally on macOS; fresh-machine setup has not been independently checked.
 - [x] Include a screenshot or short recording of the real sample/upload flow.
 - [ ] Add a live URL only after deploying and testing it.
-- [x] Describe Phases 1–4 as implemented with live-AI verification explicitly pending and later phases as planned.
+- [x] Describe Phases 1–5 as implemented with live-AI verification explicitly pending and Phase 6 as planned.
 - [ ] Confirm the competition's own eligibility, disclosure, and submission rules.
 
 The owner supplied the Bengaluru build-board submission form. It accepts GitHub/demo/video/website URLs and asks for name, email, Indian mobile number, project title, description, and publication consent. The owner is submitting personally; this repository does not claim that a submission was made. Full competition eligibility rules have not been verified.

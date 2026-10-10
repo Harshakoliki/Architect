@@ -123,3 +123,21 @@ def test_plain_json_alias_and_next_app_route_conventions():
     imports = [edge for edge in graph['edges'] if edge['kind'] == 'imports']
     assert len(imports) == 1
     assert imports[0]['target'] == files[3]['id']
+
+
+def test_updated_sample_scans_real_changes_and_retains_revision_evidence():
+    original, _ = scan(SAMPLE)
+    updated, _ = scan(SAMPLE.parent / 'document-app-v2')
+    old = {file['path']: file for file in original}
+    new = {file['path']: file for file in updated}
+    assert set(new) - set(old) == {'api/audit.py'}
+    assert set(old) - set(new) == {'database/schema.sql'}
+    assert {path for path in old.keys() & new.keys() if old[path]['hash'] != new[path]['hash']} == {
+        'api/main.py', 'web/upload.tsx', 'README.md'}
+    graph = build_graph(updated)
+    assert [node['label'] for node in graph['nodes'] if node['kind'] == 'route'] == ['POST /api/documents/upload']
+    assert len([edge for edge in graph['edges'] if edge['kind'] == 'imports']) == 2
+    for edge in graph['edges']:
+        for evidence in edge['evidence']:
+            assert evidence['source_hash'] == new[evidence['path']]['hash']
+            assert 1 <= evidence['start_line'] <= evidence['end_line'] <= new[evidence['path']]['lines']

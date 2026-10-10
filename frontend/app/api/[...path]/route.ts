@@ -8,7 +8,7 @@ export const maxDuration = 60;
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const endpoint = path.join("/");
-  if (!/^(health|projects(?:\/[a-f0-9-]{36})?|sample|scan|interpret|ask)$/.test(endpoint)) {
+  if (!/^(health|projects(?:\/[a-f0-9-]{36})?|sample|sample-next|scan|interpret|ask)$/.test(endpoint)) {
     return NextResponse.json({ detail: "Unknown endpoint." }, { status: 404 });
   }
   const cookieStore = await cookies();

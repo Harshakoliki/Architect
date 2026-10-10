@@ -2,17 +2,17 @@
 
 **Version:** 0.1, implementation baseline
 **Date / documentation checked:** 10 October 2026
-**Status:** Phases 1–4 implemented; live AI verification awaits a private key; later phases await approval. Section 0 and the README define current behavior.
+**Status:** Phases 1–5 implemented; live AI verification awaits a private key; later phases await approval. Section 0 and the README define current behavior.
 **Product:** Visual Product Intelligence, working product name Architect
 **Companion documents:** [Product requirements](../visual-product-intelligence-prd.md), [six-phase build plan](mvp-build-plan.md)
 
 ## Product outcome this design must serve
 
-**Problem:** Understanding one product action can require reconstructing connections across source files and asking the people who know the system. A file inventory alone leaves that work with the user.
+**Problem:** Frameworks and AI tools help more people build working software, but builders can still struggle to explain how its screens, APIs, modules and storage communicate. Understanding one product action can require reconstructing connections across source files and asking the people who know the system. A file inventory alone leaves that work with the user.
 
 **Solution:** Combine supported static relationships, cited product interpretations, flow questions and audience-specific presentation in one inspectable visual workspace. Every technical decision must help someone move from a product question to relevant source without hiding uncertainty.
 
-**Benefit:** Users get a clearer place to begin, a flow they can review, and a shared explanation for the discussion. Evaluate task completion, citation usefulness and comprehension before claiming faster onboarding or better change outcomes. History is the next planned extension.
+**Benefit:** Users get a clearer place to begin, a flow they can review, and a shared explanation for the discussion. Evaluate task completion, citation usefulness and comprehension before claiming faster onboarding or better change outcomes. Captured-version comparison now preserves earlier source context; Git history remains a later extension.
 
 ## 0. Hosting amendment — current implementation baseline (2026-10-10)
 
@@ -595,3 +595,35 @@ A separately labeled hand-authored document-upload/fingerprinting sample passes 
 - Plain English / Technical toggles preserve graph identity, focus, current selection and source evidence while changing labels and detail.
 - Questions/interpretations remain in the open page only; no conversation persistence or external runtime tracing.
 - Next gate: Phase 5 snapshot comparison and evolution. Hosting remains deferred.
+
+## Phase 5 implementation checkpoint — 2026-10-10
+
+This checkpoint supersedes the original watcher/Git/durable-history implementation scope for Phase 5. Phase 6 awaits approval.
+
+### Routes and presentation
+
+- `/` is a minimal server-rendered landing page. Get started links to `/dashboard`, which hosts the existing client workspace. The custom emblem is removed; the name remains plain text.
+- Charcoal cards, restrained red connections, circular ports, explicit source labels and selected-flow motion remain. Motion does not represent runtime traffic.
+- No new dependencies, external fonts, auth or deployment were added.
+
+### Captured-version model and algorithm
+
+- Each successful scan or opened saved scan is retained in the dashboard’s memory, up to eight snapshots. There is no silent eviction. A full tray offers removal before another capture can be kept. Removing a tray entry never deletes a server scan.
+- Snapshots retain source contents, file inventory/hash, graph and capture timestamp. The chronological list sorts by capture timestamp; it does not infer commits or verify common repository identity.
+- `frontend/lib/history.ts` compares files by path/hash. Renames are removal/addition. Graph comparison requires matching nonempty analyzer versions; otherwise only file changes are shown.
+- Route IDs contain source line positions in extraction. Comparison normalizes route identity to kind + implementing file + declared label to avoid misclassifying moved declarations as new routes. Other graph identities reuse analyzer IDs.
+- Relationship comparison groups by source/target identity and relationship kind, aggregating duplicate edges. Differences in confidence, label, evidence spans, extractor or source hash are labeled evidence/relation updates. These are not guaranteed behavior changes.
+- Original graph IDs remain in each comparison side. The source viewer receives the chosen snapshot explicitly, so identical file IDs across captures still open the correct version’s source, hash and lines.
+- Before/After maps reuse ArchitectureMap. Text badges and dashed removed paths supplement color. Same-snapshot selection produces an explicit empty state.
+
+### Trust, lifecycle and limits
+
+Comparison is pure browser-side work over already received scans. It makes no additional upload, OpenAI call or persistence write. The original ZIP boundary and scan validation are unchanged. The fixed `/api/sample-next` route scans the included changed fixture; it accepts no arbitrary filesystem path. That fixture cannot claim the original sample’s hand-authored product interpretation.
+
+Reloading or leaving the dashboard clears the comparison tray. Configured Supabase continues saving individual scans under the existing workspace boundary; users reopen those scans to compare. No database migration is required. Generated product interpretations remain attached to their original scan and are not treated as verified for later code.
+
+No Git history, commit attribution, automatic refresh, local watcher, feature-level semantic diff or runtime tracing is shipped. The original Sections 14 and 17 describe future design where they exceed this checkpoint.
+
+### Acceptance and verification
+
+35 backend tests, six browser-comparison logic tests, backend lint, frontend type checking and production build passed. Browser checks covered landing navigation, sample delta counts, version-correct source, changed relationship evidence, before/after declarations, same-snapshot selection and responsive controls. See [Phase 5 verification](phase-5-verification.md). Live OpenAI, Supabase and deployed behavior remain unverified without configuration. Next gate: Phase 6 demo completion, accessibility, export/deletion and reliability; hosting remains deferred.
