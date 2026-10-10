@@ -28,6 +28,12 @@ Compare captured versions to keep earlier source context visible as the code cha
 
 These are the intended benefits. Time savings, defect reduction and adoption have not been measured. The MVP does not establish complete runtime behavior or change impact.
 
+## Potential impact
+
+Architect aims to turn access to code into practical understanding of a product. For someone building with AI, that means a way to investigate unfamiliar implementation and take responsibility for what they ship. For a team, it means a source-linked starting point for newcomers, a shared reference for product discussions, and captured context that can survive a handoff.
+
+The current MVP demonstrates the mechanism through supported source extraction, inspectable evidence, bounded product-flow examples, version comparison and reports. User impact still needs validation: measure whether builders can correctly explain a feature, find its implementation, recognize missing context and review a change with less repeated investigation. Do not present passing tests as proof of productivity gains.
+
 ## Short pitch
 
 Your team has the code. Understanding how the product fits together can still mean hunting through files and asking the people who built it. Architect makes supported connections visible through interactive maps, cited feature flows, and Plain English or Technical explanations. Follow a product question to the relevant flow, inspect its source, and give the team a clearer starting point for the next conversation.

@@ -43,6 +43,24 @@ These are the outcomes we are building toward and validating. We have not measur
 
 **Our promise: make the product easier to understand, and make the explanation inspectable.**
 
+## Why this matters: helping builders understand what they own
+
+**Architect’s potential impact is turning access to code into practical understanding of a product.** A builder needs to explain how a feature works, find the right place to investigate, and understand the questions a change raises. Those decisions become difficult when the connections exist only across files or in someone else’s memory.
+
+This matters especially for people building with AI. Generated code can give them a working starting point while leaving parts of the implementation unfamiliar. Architect gives them a way to follow supported connections, inspect the evidence, and identify missing context as they take responsibility for what they build.
+
+The impact we want to create:
+
+- **More capable builders:** help a solo founder or first-time developer explain a supported feature and locate its implementation.
+- **Less repeated reconstruction:** give newcomers a source-linked starting point and teams an explanation they can revisit and export.
+- **More inclusive product discussions:** let developers, founders and product managers explore the same evidence through language they understand.
+- **Better-informed change reviews:** surface direct relationships, differences between captured versions, and unresolved boundaries that deserve investigation.
+- **Understanding that survives a handoff:** preserve a captured map and its references so the next person has context to inspect.
+
+**What the MVP demonstrates:** real extraction of supported source relationships, inspectable connection evidence, bounded product-flow examples, captured-version comparison, and downloadable reports. These demonstrate the mechanism; passing software tests does not establish user or business impact.
+
+**How we will validate the impact:** ask builders to explain a feature, locate its supporting files, and review a change using their usual tools and Architect. Measure time to a correct answer, explanation accuracy, recognition of missing context, and whether they can repeat the task independently. Until those studies are run, faster onboarding, fewer interruptions and better change decisions remain hypotheses.
+
 ## Try the current MVP
 
 This repository contains the **Phase 6 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
