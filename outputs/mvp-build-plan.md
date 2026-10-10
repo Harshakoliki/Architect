@@ -2,7 +2,7 @@
 
 Date: 10 October 2026
 
-Status: Phase 1 approved. Phase 2 built with the static coverage documented in README and its verification report. Phases 3–5 are built; live OpenAI verification awaits a private key. Phase 6 is approved and implemented; final browser verification is in progress.
+Status: Phase 1 approved. Phase 2 built with the static coverage documented in README and its verification report. Phases 3–5 are built; live OpenAI verification awaits a private key. Phase 6 is approved, implemented and verified on the no-key production demo. Live OpenAI and Supabase verification remain pending.
 
 **Hosting amendment:** Vercel + Supabase replace the original local-only runtime below. ZIP upload replaces local-path registration. Optional Supabase stores captured masked source; without credentials, previews last until reload. Hosted code leaves the device. Phase 5 starts with uploaded snapshot comparisons; Git refresh/history and local watching require later GitHub/companion integrations. See TRD Section 0 and README for the authoritative current baseline.
 

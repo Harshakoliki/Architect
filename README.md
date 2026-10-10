@@ -51,9 +51,9 @@ This repository contains the **Phase 6 MVP checkpoint**. The no-key demo scans a
 
 ![Architect landing page — understand the product behind your code](outputs/architect-live.jpg)
 
-![Architect dashboard — code connections and supporting source](outputs/architect-dashboard.jpg)
+![Architect dashboard — evidence downloads and source-backed connections](outputs/architect-phase-6.png)
 
-[See the captured-version comparison](outputs/architect-phase-5.jpg). The landing screenshot uses the current wordmark. The dashboard screenshot is refreshed at each UI checkpoint; older verification reports retain their historical screenshots.
+[See the captured-version comparison](outputs/architect-phase-5.jpg). The dashboard screenshot shows Phase 6; the comparison link preserves the Phase 5 checkpoint. Older verification reports retain their historical screenshots.
 
 ## Download and manage results
 

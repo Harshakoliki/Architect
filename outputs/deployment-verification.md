@@ -47,3 +47,7 @@ Only the public source fixture was uploaded for API checks. No private repositor
 - Public demo uploads reach Vercel. Use public/sample code; the MVP does not provide accounts, durable quotas or complete abuse controls.
 - History is bounded to eight captured versions in the open dashboard; no Git commit history, watcher, automatic refresh or runtime tracing.
 - Phase 6 (full demo polish, accessibility, evidence-aware export, saved-scan deletion and broader reliability review) still requires owner approval.
+
+## Phase 6 follow-up — 10 October 2026
+
+Git pushes updated the existing project automatically; Vercel production showed commit `43797f9`. Health returned phase 6 with preview storage and OpenAI unconfigured. Verified sample scan, selected source evidence, keyboard card/edge selection, source-modal focus/Tab/Escape, both report downloads and file contents, annotated questions/product views, and captured-version comparison. See [Phase 6 report](phase-6-verification.md) for tested scope and [current screenshot](architect-phase-6.png). No new project, database, provider credential, paid upgrade or access expansion was added.

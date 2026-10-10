@@ -15,7 +15,7 @@
 
 **Positioning line:** Understand the product behind your code.
 
-**Implementation note:** This PRD describes the broader local-first product vision. The current Phase 5 web MVP uses ZIP ingestion, optional Supabase and explicitly opted-in OpenAI; it includes session-based captured-version comparison, but no GitHub ingestion, commit history, automatic refresh or local companion yet. The [README](README.md) and [TRD amendment](outputs/architect-mvp-trd.md) define shipped behavior and actual data boundaries. Do not present vision requirements as completed capabilities.
+**Implementation note:** This PRD describes the broader local-first product vision. The current Phase 6 web MVP uses ZIP ingestion, optional Supabase and explicitly opted-in OpenAI; it includes session-based captured-version comparison, evidence-linked downloads and workspace-scoped saved-scan deletion (live verification pending Supabase configuration), but no GitHub ingestion, commit history, automatic refresh or local companion yet. The [README](README.md) and [TRD amendment](outputs/architect-mvp-trd.md) define shipped behavior and actual data boundaries. Do not present vision requirements as completed capabilities.
 
 ## 1. Executive decision
 
