@@ -1,5 +1,6 @@
 "use client";
 
+import FlowQuestion from "./flow-question";
 import { useState } from "react";
 import ArchitectureMap, { type Evidence, type GraphData, type GraphNode, type GraphEdge } from "./architecture-map";
 
@@ -10,10 +11,10 @@ type Flow = {title:string; steps:Step[]; transitions:{source:string; target:stri
 type Feature = {title:string; summary:string; evidence_ids:string[]; journeys:Flow[]; data_flows:Flow[]};
 export type ProductMeaning = {features:Feature[]; gaps:string[]; provider:string; model:string; version:string; evidence:Snippet[]; usage:{input_tokens?:number; output_tokens?:number}};
 
-export default function ProductViews({context, meaning, onMeaning, mode, configured, model, sample, contents, onSource}:{
+export default function ProductViews({context, meaning, onMeaning, mode, configured, model, sample, contents, onSource, audience, onMode}:{
   context:SourceContext; meaning?:ProductMeaning; onMeaning:(value:ProductMeaning)=>void; mode:string;
   configured:boolean; model:string; sample:boolean; contents:Record<string,string>;
-  onSource:(id:string,start:number,end:number)=>void;
+  onSource:(id:string,start:number,end:number)=>void; audience:"technical"|"plain"; onMode:(mode:string)=>void;
 }) {
   const [consent,setConsent] = useState(false);
   const [busy,setBusy] = useState(false);
@@ -62,9 +63,10 @@ export default function ProductViews({context, meaning, onMeaning, mode, configu
       </details>
     </section>
     {meaning && <>
+      <FlowQuestion key={meaning.provider+meaning.version} context={context} meaning={meaning} configured={configured} onSource={onSource} onOpen={(feature,flow,view)=>{setFeatureIndex(feature);setFlowIndex(flow);onMode(view);}}/>
       <div className="feature-picker"><div><span className="eyebrow">FEATURES FOUND</span><p>{meaning.features.length} candidate features · all interpretations are inferred</p></div>{mode !== "features" && <label>Feature <select aria-label="Product feature" value={featureIndex} onChange={event=>{setFeatureIndex(Number(event.target.value));setFlowIndex(0);}}>{meaning.features.map((item,index)=><option key={index} value={index}>{item.title}</option>)}</select></label>}</div>
       {mode !== "features" && feature && <div className="flow-picker"><h3>{feature.title}</h3><p>{feature.summary}</p><div role="group" aria-label="Available flows">{flows.map((item,index)=><button key={index} aria-pressed={index === Math.min(flowIndex,flows.length-1)} onClick={()=>setFlowIndex(index)}>{item.title}</button>)}</div></div>}
-      {nodes.length ? <ArchitectureMap key={`${mode}:${featureIndex}:${flowIndex}:${meaning.provider}`} graph={graph} contents={contents} mode="product" title={title} onSource={onSource}/> : <div className="product-empty">{meaning.features.length ? "No supported flow was proposed for this feature in this view. Try another feature or inspect the known gaps." : "Not enough source evidence to propose a product feature. The architecture view remains available."}</div>}
+      {nodes.length ? <ArchitectureMap key={`${mode}:${featureIndex}:${flowIndex}:${meaning.provider}`} graph={graph} contents={contents} mode="product" audience={audience} title={title} onSource={onSource}/> : <div className="product-empty">{meaning.features.length ? "No supported flow was proposed for this feature in this view. Try another feature or inspect the known gaps." : "Not enough source evidence to propose a product feature. The architecture view remains available."}</div>}
       <details className="relationship-list product-gaps" open><summary>Interpretation gaps and limits ({meaning.gaps.length})</summary>{meaning.gaps.map((gap,index)=><p key={index}>{gap}</p>)}<p>Valid citations establish where the explanation came from. They do not prove the explanation is correct or that a flow ran in production.</p></details>
     </>}
   </div>;

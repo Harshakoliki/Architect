@@ -6,11 +6,11 @@
 
 Architect is an evidence-first visual workspace for understanding software. The long-term goal is to turn a repository into six connected perspectives: **architecture, user journeys, data flows, feature relationships, dependencies, and evolution**.
 
-This hackathon repository contains the **Phase 3 MVP checkpoint**: upload a small repository ZIP, explore imports and declared routes, inspect code-linked evidence, and build inferred feature, journey, and data-flow views from bounded source excerpts. The interface follows a charcoal-and-red visual language inspired by architectural diagrams and product flow maps.
+This hackathon repository contains the **Phase 4 MVP checkpoint**: upload a small repository ZIP, explore imports and declared routes, inspect code-linked evidence, build inferred feature, journey, and data-flow views from bounded source excerpts, ask source-grounded flow questions, and switch between Plain English and Technical explanations. The interface follows a charcoal-and-red visual language inspired by architectural diagrams and product flow maps.
 
-> **Current status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence panel, feature/source map, user journeys, and data flows. OpenAI Structured Outputs integration is implemented and tested with the real SDK against mocked provider responses; **a live OpenAI call has not been verified because no API key is configured**. A clearly labeled hand-authored sample demonstrates the product views without a key. Natural-language answers, audience switch, GitHub ingestion, and history remain planned. Optional Supabase persistence awaits the owner's separate project. Hosting is intentionally deferred.
+> **Current status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence panel, feature/source map, user journeys, and data flows. OpenAI Structured Outputs integration is implemented and tested with the real SDK against mocked provider responses; **a live OpenAI call has not been verified because no API key is configured**. A clearly labeled hand-authored sample demonstrates the product views without a key. A limited sample question finder and Plain English / Technical switch work without a key. OpenAI-backed questions are implemented with citation/navigation checks; live behavior remains unverified. GitHub ingestion and history remain planned. Optional Supabase persistence awaits the owner's separate project. Hosting is intentionally deferred.
 
-![Architect product views and source evidence](outputs/architect-phase-3.jpg)
+![Architect product views and source evidence](outputs/architect-phase-4.jpg)
 
 ## Why this exists
 
@@ -31,6 +31,8 @@ We start with a simple promise: **show what the source actually supports, label 
 | Honest gaps | Unresolved imports, parser failures, dynamic boundaries, and an explicit candidate label on HTTP method/path matches |
 | Product interpretation | Optional OpenAI feature proposals, user journeys, and data flows; every generated feature/step/transition must cite available source excerpts |
 | Sample product views | Hand-authored, validated document-upload and fingerprinting example; explicitly labeled as not an OpenAI result |
+| Questions | Source-grounded OpenAI answers after consent; limited annotated-sample flow finder without a key; uncertain requests do not open a flow |
+| Explanation level | Plain English or Technical card detail; stable graph identity, selection and evidence |
 | Evidence | Captured source viewer with line numbers, original file SHA256, and best-effort masking of known secret patterns |
 | Persistence | Optional private Supabase source storage and server-only scan metadata; preview mode works without credentials |
 | Workspace boundary | Random browser session cookie scopes saved scans; no account signup |
@@ -74,7 +76,9 @@ For configuration, copy `.env.example` to `.env` at the repository root. The lau
 9. Open **User journeys** and choose **Explore annotated sample**. Follow document selection → HTTP candidate → in-memory record → feedback. The provider label explicitly says no AI call was made.
 10. Switch to **Data flows** and choose **Document fingerprinting** to see bytes → identifier. Open any card or connection to inspect its supporting source excerpt.
 11. Open **Feature relationships** to see candidate features connected to their cited files. Shared source does not establish a feature-to-feature dependency.
-12. Upload another small repository ZIP to inspect real supported source relationships. Configure OpenAI privately to generate product views for that upload.
+12. In a product view, use **Try: customer uploads a document**, click **Explore flow**, review the citations, and click **Open this flow**. Try **Show document** to see a clarification, or **Show document upload data** to open the data-flow view.
+13. Switch **Plain English / Technical** above the map. The same nodes and selected evidence remain; descriptions, source-path detail and static connection wording change.
+14. Upload another small repository ZIP to inspect real supported source relationships. Configure OpenAI privately to generate product views for that upload.
 
 The fixture's SQL schema is intentionally unconnected to its in-memory storage. The analyzer does not invent a database connection just because a SQL file exists.
 
@@ -91,6 +95,14 @@ The API receives at most 12 excerpts / 48 KB of context. Selection prioritizes d
 One foreground Responses call uses `store=false`, a 45-second SDK timeout, no automatic retries, and a 6,000-output-token cap. One call may be in flight per Python process. The app records returned model/token usage and verifies citation membership plus flow endpoint/step identity before attaching a result. These checks do **not** establish that AI prose is factually correct. All product interpretations remain inferred. [OpenAI Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs), [OpenAI data controls](https://developers.openai.com/api/docs/guides/your-data).
 
 Results are cached in the currently open browser scan only. Layer switching reuses them; reload/reopening requires regeneration. They are not persisted to Supabase in this phase. `store=false` does not guarantee zero provider retention. A user-initiated regeneration may incur another API charge. Missing keys, refusal, invalid citations, incomplete output, and provider failures preserve the static map.
+
+### Ask a flow question
+
+Open User journeys, Data flows or Feature relationships after building product views. Questions select an existing feature/flow and return supporting excerpt links; **Open this flow** navigates to that view. They do not generate new steps or execute the application. Unsupported or ambiguous responses carry no navigation target.
+
+The bundled annotated sample uses a **limited lexical flow finder, not AI**. It recognizes document upload/fingerprinting and data-flow intent; it cannot diagnose failures, security, latency or runtime behavior. Arbitrary repository questions use OpenAI after separate consent to transmit the question, existing interpretation and reviewed source bundle. Requests are bounded to 128 KB, questions to 500 characters, and use the same timeout, store=false, single-call lock and output limits as interpretation. Returned citations and feature/flow indexes are checked before navigation. Valid references do not prove the answer is true. The existing interpretation itself is inferred, and the supplied browser snapshot is not server-attested.
+
+Plain English uses explanatory card descriptions and friendlier static connection labels. Technical uses cited paths/line numbers and available code previews. Both retain uncertainty labels, source access, graph IDs and current selection. This is a presentation switch, not a claim of different analysis quality.
 
 ### Create a small upload example
 
@@ -204,7 +216,7 @@ After each phase, explain what works, demonstrate it, report checks and limitati
 | 1 — Foundation | ZIP/sample scan, real inventory, source viewer, UI, optional Supabase | Built; verification report accompanies handoff |
 | 2 — Architecture & dependencies | Parse supported code relationships; evidence-backed graph | Built; narrowed static coverage documented below |
 | 3 — Product meaning | OpenAI-assisted feature, journey, and data-flow views | Built; live provider verification pending a private key |
-| 4 — Ask & explain | Natural-language flow exploration; technical/nontechnical switch | Planned |
+| 4 — Ask & explain | Natural-language flow exploration; technical/nontechnical switch | Built; sample/UI verified, live provider verification pending |
 | 5 — Evolution | Compare uploaded snapshots; Git history after GitHub ingestion | Planned |
 | 6 — Complete demo | Accessibility/polish, export/deletion, reliability, full README update | Planned |
 
@@ -218,7 +230,7 @@ After each phase, explain what works, demonstrate it, report checks and limitati
 
 ## Next product phase
 
-Phase 4 adds natural-language questions such as “Show me everything involved when a customer uploads a document,” plus a technical/nontechnical explanation switch. The current Phase 3 implementation supplies the evidence-linked product views it will use. Phase 4 has not started and retains the owner's confirmation gate.
+Phase 5 will compare uploaded snapshots and show added, removed and changed supported relationships. Git commit history and automatic refresh depend on later GitHub ingestion. Phase 5 requires the owner’s confirmation.
 
 ## Verification
 
@@ -233,11 +245,11 @@ npm run build
 
 Tests cover safe extraction, expansion/upload limits, duplicate paths, secret masking and line preservation, ignore rules, real sample/upload scanning, API service/workspace boundaries, Supabase read scoping, and failed-save preview behavior. Live cloud persistence and deployed-provider behavior require a configured separate project and real deployment.
 
-See [`outputs/phase-3-verification.md`](outputs/phase-3-verification.md) for the actual handoff results. Coverage is deliberately narrow; it is not a security audit or proof that arbitrary repositories are completely understood.
+See [`outputs/phase-4-verification.md`](outputs/phase-4-verification.md) for the actual handoff results. Coverage is deliberately narrow; it is not a security audit or proof that arbitrary repositories are completely understood.
 
 ## Known limitations
 
-- Imports and selected declared routes are mapped. Product views are bounded interpretations over selected excerpts. No symbol-level call graph, complete repository understanding, natural-language answers, audience switch, watcher, Git history, GitHub ingestion, export, or deletion yet.
+- Imports and selected declared routes are mapped. Product views are bounded interpretations over selected excerpts. No symbol-level call graph, complete repository understanding, watcher, Git history, GitHub ingestion, export, or deletion yet.
 - Live OpenAI behavior/quality is unverified without an API key. The bundled annotated sample is hand-authored and cannot be applied to a different repository. Provider tests use mocked responses through the actual SDK.
 - Feature relationships currently show candidate features and shared supporting source files. They do not infer feature-to-feature dependencies. Flow citations reference complete selected excerpts, not claim-specific individual lines.
 - Static resolution is bounded: no inherited tsconfig/JSONC alias expansion, package export maps, `.js` to `.ts` substitution, arbitrary Python sys.path inference, dynamic import targets, mounted route prefixes, middleware tracing, Next.js Pages Router, aliased/arrow route-handler exports, or runtime topology.
@@ -282,7 +294,7 @@ Research/configuration review as of **2026-10-10**:
 - [x] Install dependencies and run both services locally on macOS; fresh-machine setup has not been independently checked.
 - [x] Include a screenshot or short recording of the real sample/upload flow.
 - [ ] Add a live URL only after deploying and testing it.
-- [x] Describe Phases 1–3 as implemented with live-AI verification explicitly pending and later phases as planned.
+- [x] Describe Phases 1–4 as implemented with live-AI verification explicitly pending and later phases as planned.
 - [ ] Confirm the competition's own eligibility, disclosure, and submission rules.
 
 The owner supplied the Bengaluru build-board submission form. It accepts GitHub/demo/video/website URLs and asks for name, email, Indian mobile number, project title, description, and publication consent. The owner is submitting personally; this repository does not claim that a submission was made. Full competition eligibility rules have not been verified.

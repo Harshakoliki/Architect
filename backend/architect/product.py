@@ -165,29 +165,34 @@ Describe branches explicitly; a connection means a proposed flow, not a runtime 
 Return only the required structured result; do not include code or secrets in prose."""
 
 
-def interpret(context: dict) -> dict:
+def call_model(schema, instructions: str, payload: dict):
     if not os.getenv("OPENAI_API_KEY"):
         raise ValueError("OpenAI is not configured. Add OPENAI_API_KEY privately to .env and restart the app.")
     if not IN_FLIGHT.acquire(blocking=False):
         raise ValueError("An interpretation is already running. Please try again shortly.")
-    model = os.getenv("OPENAI_MODEL") or "gpt-6.1-sol"
     try:
         with OpenAI(api_key=os.environ["OPENAI_API_KEY"], max_retries=0, timeout=45) as client:
-            response = client.responses.parse(model=model, store=False, max_output_tokens=6000,
-                instructions=INSTRUCTIONS, input=json.dumps(context), text_format=Meaning)
+            response = client.responses.parse(model=os.getenv("OPENAI_MODEL") or "gpt-6.1-sol",
+                store=False, max_output_tokens=6000, instructions=instructions,
+                input=json.dumps(payload), text_format=schema)
         if response.status != "completed" or response.output_parsed is None:
             raise ValueError("OpenAI declined or could not complete the interpretation. The source map is unchanged.")
-        result = validate_meaning(response.output_parsed, context)
-        return {**result, "provider": "openai", "model": response.model, "version": VERSION,
-                "context_digest": hashlib.sha256(json.dumps(context, sort_keys=True).encode()).hexdigest(),
-                "usage": response.usage.model_dump() if response.usage else {},
-                "evidence": context["snippets"]}
+        return response
     except APIError:
         raise ValueError("OpenAI request failed. Check the server key, model access, and API limits, then retry.") from None
     except (ValidationError, json.JSONDecodeError):
         raise ValueError("OpenAI returned an invalid result. No interpretation was attached.") from None
     finally:
         IN_FLIGHT.release()
+
+
+def interpret(context: dict) -> dict:
+    response = call_model(Meaning, INSTRUCTIONS, context)
+    result = validate_meaning(response.output_parsed, context)
+    return {**result, "provider": "openai", "model": response.model, "version": VERSION,
+            "context_digest": hashlib.sha256(json.dumps(context, sort_keys=True).encode()).hexdigest(),
+            "usage": response.usage.model_dump() if response.usage else {},
+            "evidence": context["snippets"]}
 
 
 def annotated_example(context: dict, expected: dict) -> dict:

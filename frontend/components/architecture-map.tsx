@@ -25,8 +25,8 @@ const nodeTypes = { card: Card };
 function edgeLabel(edge: GraphEdge) { return edge.label || labels[edge.kind] || edge.kind; }
 const initialFitOptions = { padding: .2, maxZoom: 1 };
 
-export default function ArchitectureMap({ graph, contents, mode, onSource, title }: {
-  graph: GraphData; contents: Record<string,string>; mode: string; onSource: (id: string,line: number,end: number) => void; title?: string;
+export default function ArchitectureMap({ graph, contents, mode, onSource, title, audience="technical" }: {
+  graph: GraphData; contents: Record<string,string>; mode: string; onSource: (id: string,line: number,end: number) => void; title?: string; audience?: "technical" | "plain";
 }) {
   const [query, setQuery] = useState("");
   const [focus, setFocus] = useState("");
@@ -63,15 +63,15 @@ export default function ArchitectureMap({ graph, contents, mode, onSource, title
     const point = layout.get(node.id);
     const content = node.file_id ? contents[node.file_id] || "" : "";
     return { id:node.id,type:"card",position:{x:point.x-119,y:point.y-66},data:{
-      label:node.label,kind:node.kind,subtitle:node.language || node.description || "Declared source relationship",
-      excerpt:node.kind === "file" ? content.split("\n").find(line => line.trim() && !line.trim().startsWith("//"))?.slice(0,70) || "" : "",
+      label:audience === "plain" && node.kind === "file" ? (node.label.split("/").pop() || node.label) : node.label,kind:node.kind,subtitle:audience === "plain" ? node.description || ({file:"Source file · select to inspect its connections",route:"A declared request handler",reference:"A referenced module",unresolved:"A reference we could not resolve"}[node.kind] || "Source-supported relationship") : node.evidence?.[0] ? `${node.evidence[0].path}:${node.evidence[0].start_line}` : node.language || node.description || "Declared source relationship",
+      excerpt:audience === "technical" && node.kind === "file" ? content.split("\n").find(line => line.trim() && !line.trim().startsWith("//"))?.slice(0,70) || "" : "",
       active:highlighted.has(node.id),
     },style:{opacity:highlighted.size && !highlighted.has(node.id) ? .4 : 1},ariaLabel:`${node.kind}: ${node.label}` };
   });
   const edges = shownEdges.map(edge => {
     const active = selectedEdge ? edge.id === selectedEdge.id : focus ? edge.source === focus || edge.target === focus : false;
     const color = edge.confidence === "unknown" ? "#bc5d70" : active ? "#dc6674" : edge.confidence === "inferred" ? "#ad7b86" : "#8e4b59";
-    return {...edge,type:"smoothstep",label:edgeLabel(edge),
+    return {...edge,type:"smoothstep",label:audience === "plain" ? ({imports:"uses code from",references:"refers to module",unresolved:"unresolved reference",implemented_by:"handled by",http_candidate:"possible request"}[edge.kind] || edgeLabel(edge)) : edgeLabel(edge),
       animated:active && moving,className:active ? "edge-active" : "",focusable:true,
       markerEnd:{type:MarkerType.ArrowClosed,color,width:14,height:14},
       style:{stroke:color,strokeWidth:active ? 2 : 1.3,opacity:highlighted.size && !active ? .25 : 1,

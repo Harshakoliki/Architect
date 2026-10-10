@@ -23,9 +23,10 @@ from .product import (
     make_context,
     validate_context,
 )
+from .questions import QuestionRequest, answer_question
 from .scanner import ScanError, redact, scan
 
-app = FastAPI(title="Architect", version="0.3.0")
+app = FastAPI(title="Architect", version="0.4.0")
 SAMPLE = Path(__file__).parent.parent / "fixtures" / "document-app"
 
 
@@ -43,7 +44,7 @@ async def server_boundary(request: Request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"storage": "supabase" if db.configured() else "preview", "phase": 3,
+    return {"storage": "supabase" if db.configured() else "preview", "phase": 4,
             "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
             "ai_model": os.getenv("OPENAI_MODEL") or "gpt-6.1-sol"}
 
@@ -158,5 +159,26 @@ async def product_interpretation(request: Request):
         raise HTTPException(422, "Invalid interpretation request. Reopen the source scan.") from None
     try:
         return await run_in_threadpool(product_result, body)
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from None
+
+
+@app.post("/api/ask")
+async def ask(request: Request):
+    data = bytearray()
+    async for chunk in request.stream():
+        data.extend(chunk)
+        if len(data) > 128_000:
+            raise HTTPException(413, "Question context exceeds 128 KB.")
+    try:
+        body = QuestionRequest.model_validate_json(data)
+    except ValidationError:
+        raise HTTPException(422, "Invalid question request. Reopen the source scan.") from None
+    def result():
+        context = validate_context(body.context)
+        expected = product_result(InterpretationRequest(context=body.context, example=True)) if body.example else None
+        return answer_question(body, context, expected)
+    try:
+        return await run_in_threadpool(result)
     except ValueError as error:
         raise HTTPException(422, str(error)) from None

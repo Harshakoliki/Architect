@@ -576,3 +576,14 @@ Every feature, step, and transition requires an available excerpt ID. Transition
 The three product views reuse the charcoal/red interactive map and source inspector. Feature relationships connect candidate features to cited files, exposing shared code evidence without claiming feature dependencies. Journey/data views offer a feature selector and flow selector. Context review and generation controls collapse after a result. Results are browser-scan cached only and deliberately not written to Supabase yet.
 
 A separately labeled hand-authored document-upload/fingerprinting sample passes the same citation/flow checks; it is available only when the submitted context exactly matches the bundled sample. It makes no OpenAI request. Verification and remaining gaps are recorded in phase-3-verification.md.
+
+
+## Phase 4 implementation checkpoint — 2026-10-10
+
+- Added POST /api/ask through the existing server proxy and workspace boundary; maximum request 128 KB, question 3–500 characters, shared source/context validation.
+- Existing validated interpretation and bounded source excerpts form the question context. Strict structured answers select existing feature and flow indexes; unknown citations, out-of-range targets and uncertain navigation are rejected.
+- OpenAI path requires separate question consent and shares the existing no-tools, store=false, no-retry, 45-second, 6,000-token and single-in-flight-call controls. A live provider call remains unverified without a private key.
+- Annotated sample questions use explicitly labeled lexical matching, validated against the exact bundled sample context and meaning. This is a narrow no-key demonstration, not general AI.
+- Plain English / Technical toggles preserve graph identity, focus, current selection and source evidence while changing labels and detail.
+- Questions/interpretations remain in the open page only; no conversation persistence or external runtime tracing.
+- Next gate: Phase 5 snapshot comparison and evolution. Hosting remains deferred.

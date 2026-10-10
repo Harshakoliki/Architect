@@ -2,7 +2,7 @@
 
 Date: 10 October 2026
 
-Status: Phase 1 approved. Phase 2 built with the static coverage documented in README and its verification report. Phase 3 requires the owner’s confirmation.
+Status: Phase 1 approved. Phase 2 built with the static coverage documented in README and its verification report. Phases 3 and 4 are built; live OpenAI verification awaits a private key. Phase 5 requires the owner’s confirmation.
 
 **Hosting amendment:** Vercel + Supabase replace the original local-only runtime below. ZIP upload replaces local-path registration. Optional Supabase stores captured masked source; without credentials, previews last until reload. Hosted code leaves the device. Phase 5 starts with uploaded snapshot comparisons; Git refresh/history and local watching require later GitHub/companion integrations. See TRD Section 0 and README for the authoritative current baseline.
 
@@ -105,6 +105,6 @@ The MVP succeeds when a user can analyze a real supported repository, understand
 
 ## Current state and deferred scope
 
-Phases 1–3 are implemented and the public repository is https://github.com/Harshakoliki/Architect . Phase 3 has a verified annotated sample and mocked real-SDK tests; a live OpenAI call awaits a private key. The owner deferred hosting and is handling submission. Phase 4 retains its confirmation gate. The hosting amendment and current README supersede older local-only descriptions above.
+Phases 1–4 are implemented and the public repository is https://github.com/Harshakoliki/Architect . Phase 3 has a verified annotated sample and mocked real-SDK tests; a live OpenAI call awaits a private key. The owner deferred hosting and is handling submission. Phase 4 adds a verified sample flow finder, source-grounded OpenAI question integration, and an explanation switch. Phase 5 retains its confirmation gate. The hosting amendment and current README supersede older local-only descriptions above.
 
 Authentication, billing, hosted ingestion, remote repository authorization, production telemetry, arbitrary-language support, collaboration, and enterprise controls are deferred. Basic file validation, secret exclusion, API key protection, and evidence accuracy remain part of the MVP.
