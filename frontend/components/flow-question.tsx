@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { readResponse } from "@/lib/api";
 import type { ProductMeaning, SourceContext } from "./product-views";
 
 type Answer = {status:string; answer:string; feature_index:number|null; flow_index:number|null; view:string; evidence_ids:string[]; provider:string};
@@ -15,8 +16,7 @@ export default function FlowQuestion({context,meaning,configured,onOpen,onSource
     event.preventDefault();setBusy(true);setError("");setAnswer(null);
     try {
       const response = await fetch("/api/ask",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({context,meaning:{features:meaning.features,gaps:meaning.gaps},question,consent,example:sample})});
-      const result = await response.json();
-      if(!response.ok) throw new Error(result.detail || "The question could not be answered.");
+      const result = await readResponse(response);
       setAnswer(result);
     } catch(error) {setError((error as Error).message);} finally {setBusy(false);}
   }

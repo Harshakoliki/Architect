@@ -26,7 +26,7 @@ from .product import (
 from .questions import QuestionRequest, answer_question
 from .scanner import ScanError, redact, scan
 
-app = FastAPI(title="Architect", version="0.5.0")
+app = FastAPI(title="Architect", version="0.6.0")
 SAMPLE = Path(__file__).parent.parent / "fixtures" / "document-app"
 
 
@@ -44,7 +44,7 @@ async def server_boundary(request: Request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"storage": "supabase" if db.configured() else "preview", "phase": 5,
+    return {"storage": "supabase" if db.configured() else "preview", "phase": 6,
             "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
             "ai_model": os.getenv("OPENAI_MODEL") or "gpt-6.1-sol"}
 
@@ -71,6 +71,19 @@ def get_project(project_id: UUID, request: Request):
         raise HTTPException(404, "Scan not found in this workspace.")
     result["ai_context"] = make_context(result["files"], result["contents"], result.get("graph", {}))
     return result
+
+
+@app.delete("/api/projects/{project_id}")
+def delete_project(project_id: UUID, request: Request):
+    if not db.configured():
+        raise HTTPException(404, "No saved scans in preview mode.")
+    try:
+        deleted = db.delete(request.state.workspace, str(project_id))
+    except (httpx.HTTPError, ValueError, KeyError):
+        raise HTTPException(503, "Deletion did not finish. Source may already be removed; retry to finish deleting the scan.") from None
+    if not deleted:
+        raise HTTPException(404, "Scan not found in this workspace.")
+    return {"deleted": str(project_id)}
 
 
 def events(data: bytes | None, name: str, workspace: str, sample_root: Path = SAMPLE):

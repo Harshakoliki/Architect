@@ -11,6 +11,9 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
   if (!/^(health|projects(?:\/[a-f0-9-]{36})?|sample|sample-next|scan|interpret|ask)$/.test(endpoint)) {
     return NextResponse.json({ detail: "Unknown endpoint." }, { status: 404 });
   }
+  if (request.method === "DELETE" && (!/^projects\/[a-f0-9-]{36}$/.test(endpoint) || request.headers.get("sec-fetch-site") === "cross-site")) {
+    return NextResponse.json({ detail: "Delete a saved scan from this workspace." }, { status: 403 });
+  }
   const cookieStore = await cookies();
   const existing = cookieStore.get("architect-workspace")?.value;
   const workspace = existing && /^[a-f0-9]{64}$/.test(existing) ? existing : randomBytes(32).toString("hex");
@@ -61,4 +64,4 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
   }
 }
 
-export { proxy as GET, proxy as POST };
+export { proxy as GET, proxy as POST, proxy as DELETE };

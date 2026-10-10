@@ -45,7 +45,7 @@ These are the outcomes we are building toward and validating. We have not measur
 
 ## Try the current MVP
 
-This repository contains the **Phase 5 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
+This repository contains the **Phase 6 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
 
 > **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. Captured-version comparison is implemented; GitHub ingestion, commit history and automatic refresh remain planned. Optional Supabase persistence awaits the owner's separate project. Vercel production demo is live and checked; hosted operation sends source to the server.
 
@@ -53,7 +53,15 @@ This repository contains the **Phase 5 MVP checkpoint**. The no-key demo scans a
 
 ![Architect dashboard — code connections and supporting source](outputs/architect-dashboard.jpg)
 
-[See the captured-version comparison](outputs/architect-phase-5.jpg). These screenshots show the current Phase 5 interface; older verification reports retain their historical screenshots.
+[See the captured-version comparison](outputs/architect-phase-5.jpg). The landing screenshot uses the current wordmark. The dashboard screenshot is refreshed at each UI checkpoint; older verification reports retain their historical screenshots.
+
+## Download and manage results
+
+- Open a scan and choose **Download Markdown** for a readable report or **Download JSON** for structured data. The download includes the source graph, confidence, gaps, capture ID/time, original source hashes, file inventory, and the current product interpretation if one has been generated.
+- Markdown connections and product steps link to an evidence section with path, line range, extractor and source hash. Full source contents and the reviewed OpenAI snippet bodies are excluded. Filenames and generated explanations remain; review the file before sharing. Downloads are created in the browser and do not make another provider call.
+- Use **Jump to component** for a readable close-up, **Fit map** to return to the overview, or the **Browse relationships as a list** disclosure for a keyboard-friendly alternative. Cards and connections also accept keyboard selection. Source evidence opens in a modal dialog; Tab stays inside, Escape closes it.
+- With Supabase configured, **Saved scans → Delete** asks for confirmation, removes the private source capture first and then its metadata, and clears the matching open preview/comparison entry. Ownership is checked using the workspace cookie before deletion. Missing scans are treated as already removed. Failures do not show success; retry if source was removed before metadata cleanup failed.
+- Deletion does not revoke downloaded/shared copies or clear provider backups. There is no account recovery: losing the browser workspace cookie loses access to its saved scans. Without Supabase, previews remain temporary and disappear on reload.
 
 ## What works today
 
@@ -64,7 +72,9 @@ This repository contains the **Phase 5 MVP checkpoint**. The no-key demo scans a
 | Version comparison | Up to eight snapshots in the open dashboard, capture-time timeline, file and supported connection changes, before/after maps, version-specific source |
 | Safe scanning | No repository execution or dependency installation; rejects unsafe ZIP paths, duplicate entries, encrypted files, and symlinks |
 | Inventory | Real file/line counts, languages, and manifest-based framework detection |
-| Visualization | Interactive architecture/dependency graph, zoom/pan/focus, restrained red motion on selected connections, and searchable inventory |
+| Visualization | Interactive architecture/dependency graph, zoom/pan/focus, component jump, keyboard relationship list, restrained red motion and searchable inventory |
+| Export | Browser-generated Markdown/JSON with capture IDs, hashes, confidence, gaps and source references; full source excluded |
+| Deletion | Confirmed, workspace-scoped saved-scan/source deletion; partial failure is explicit and retryable |
 | Static analysis | Python AST and tree-sitter JS/TS imports, plain-JSON path aliases, FastAPI route declarations, basic Next.js App Router route/page conventions |
 | Honest gaps | Unresolved imports, parser failures, dynamic boundaries, and an explicit candidate label on HTTP method/path matches |
 | Product interpretation | Optional OpenAI feature proposals, user journeys, and data flows; every generated feature/step/transition must cite available source excerpts |
@@ -253,7 +263,7 @@ The original product vision is local-first. The owner subsequently selected Verc
 
 Current protections include bounded uploads/expansion, unsafe-path rejection, symlink rejection, ignored generated/credential directories, nested `.gitignore` rules, UTF-8/text checks, no analyzed-code execution, captured-source evidence, and server-only credentials. Known secret patterns are masked in displayed/persisted content, but secret detection is best effort. It does not make uploading a sensitive repository safe by itself. Filenames may also contain sensitive information.
 
-No telemetry, remote fonts, or GitHub authorization flows are implemented. Basic scans and the annotated example make no OpenAI requests. Opt-in OpenAI interpretation uses the separate boundary described above. Dependency installation and deployment providers have their own network behavior. App-managed project deletion and retention controls are a later phase; do not upload private repositories to a public hackathon instance.
+No telemetry, remote fonts, or GitHub authorization flows are implemented. Basic scans and the annotated example make no OpenAI requests. Opt-in OpenAI interpretation uses the separate boundary described above. Dependency installation and deployment providers have their own network behavior. Saved-scan deletion removes the captured source object and metadata in the current workspace, with confirmation and retry on partial failure. Provider backup retention is outside this control; do not upload private repositories to a public hackathon instance.
 
 ## Roadmap and phase gates
 
@@ -266,7 +276,7 @@ After each phase, explain what works, demonstrate it, report checks and limitati
 | 3 — Product meaning | OpenAI-assisted feature, journey, and data-flow views | Built; live provider verification pending a private key |
 | 4 — Ask & explain | Natural-language flow exploration; technical/nontechnical switch | Built; sample/UI verified, live provider verification pending |
 | 5 — Evolution | Captured snapshot timeline, file/connection diffs, version-correct evidence; minimal landing page | Built; Git history and automatic refresh deferred |
-| 6 — Complete demo | Accessibility/polish, export/deletion, reliability, full README update | Planned |
+| 6 — Complete demo | Keyboard/source-dialog improvements, readable map jump, evidence-linked Markdown/JSON, workspace-scoped deletion, clearer API errors | Built; live Supabase deletion verification awaits the separate project |
 
 ### Future access methods
 
@@ -278,7 +288,7 @@ After each phase, explain what works, demonstrate it, report checks and limitati
 
 ## Next product phase
 
-Phase 6 will finish the demo: review the complete journey, improve accessibility and readability, add evidence-aware export and saved-scan deletion, and check reliability. It requires the owner’s confirmation. Hosting has been separately authorized. GitHub ingestion and a local companion are separate later work.
+The approved six-phase MVP is implemented at the limited depth documented here. Next, connect the owner’s separate Supabase project and private OpenAI key, then verify persistence, deletion and actual model quality. Read-only GitHub ingestion and a local companion are separate later product phases.
 
 ## Verification
 
@@ -296,11 +306,13 @@ Tests cover safe extraction, expansion/upload limits, duplicate paths, secret ma
 
 Phase 5 checks: **35 backend tests, six comparison tests, backend lint, frontend type checking and production build passed**. Browser checks covered landing → dashboard, both source versions, changed connection evidence, before/after maps and the same-snapshot empty state.
 
-See [`outputs/phase-5-verification.md`](outputs/phase-5-verification.md) for the actual handoff results. Coverage is deliberately narrow; it is not a security audit or proof that arbitrary repositories are completely understood.
+Phase 6 checks: **41 backend tests, 10 frontend tests, backend lint, frontend type checking and production build passed**. Export tests verify linked evidence, Markdown escaping, confidence/gaps/hashes and source-body omission. Deletion tests verify workspace scoping, invalid IDs, private API boundaries and partial failures. Live provider verification is still pending.
+
+See [`outputs/phase-6-verification.md`](outputs/phase-6-verification.md) and [`outputs/phase-5-verification.md`](outputs/phase-5-verification.md) for the handoff results. Coverage is deliberately narrow; it is not a security audit or proof that arbitrary repositories are completely understood.
 
 ## Known limitations
 
-- Imports and selected declared routes are mapped. Product views are bounded interpretations over selected excerpts. No symbol-level call graph, complete repository understanding, watcher, Git history, GitHub ingestion, export, or deletion yet.
+- Imports and selected declared routes are mapped. Product views are bounded interpretations over selected excerpts. No symbol-level call graph, complete repository understanding, watcher, Git history, or GitHub ingestion yet.
 - Live OpenAI behavior/quality is unverified without an API key. The bundled annotated sample is hand-authored and cannot be applied to a different repository. Provider tests use mocked responses through the actual SDK.
 - Feature relationships currently show candidate features and shared supporting source files. They do not infer feature-to-feature dependencies. Flow citations reference complete selected excerpts, not claim-specific individual lines.
 - Static resolution is bounded: no inherited tsconfig/JSONC alias expansion, package export maps, `.js` to `.ts` substitution, arbitrary Python sys.path inference, dynamic import targets, mounted route prefixes, middleware tracing, Next.js Pages Router, aliased/arrow route-handler exports, or runtime topology.
@@ -346,7 +358,7 @@ Research/configuration review as of **2026-10-10**:
 - [x] Install dependencies and run both services locally on macOS; fresh-machine setup has not been independently checked.
 - [x] Include a screenshot or short recording of the real sample/upload flow.
 - [x] Deploy and test the live URL: https://productarchitect.vercel.app
-- [x] Describe Phases 1–5 as implemented with live-AI verification explicitly pending and Phase 6 as planned.
+- [x] Describe Phases 1–6 as implemented, with live OpenAI and Supabase verification explicitly pending.
 - [ ] Confirm the competition's own eligibility, disclosure, and submission rules.
 
 The owner supplied the Bengaluru build-board submission form. It accepts GitHub/demo/video/website URLs and asks for name, email, Indian mobile number, project title, description, and publication consent. The owner is submitting personally; this repository does not claim that a submission was made. Full competition eligibility rules have not been verified.

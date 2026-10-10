@@ -7,3 +7,10 @@ export type Summary = { file_count: number; total_bytes: number; line_count: num
 export type Snapshot = { id: string; name: string; files: SourceFile[]; summary: Summary; contents: Record<string, string>; persisted: boolean; graph?: GraphData; warning?: string; created_at: string };
 export type Change = "added" | "removed" | "updated";
 export type GraphChanges = { nodes: Record<string,Change>; edges: Record<string,Change> };
+
+export type Snippet = Omit<Evidence,"extractor"> & {id:string; content:string};
+export type SourceContext = {snippets:Snippet[]; total_files:number};
+type Step = {id:string; title:string; description:string; evidence_ids:string[]};
+type Flow = {title:string; steps:Step[]; transitions:{source:string; target:string; label:string; evidence_ids:string[]}[]};
+type Feature = {title:string; summary:string; evidence_ids:string[]; journeys:Flow[]; data_flows:Flow[]};
+export type ProductMeaning = {features:Feature[]; gaps:string[]; provider:string; model:string; version:string; evidence:Snippet[]; usage:{input_tokens?:number; output_tokens?:number}};

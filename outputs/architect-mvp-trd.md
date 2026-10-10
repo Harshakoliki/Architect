@@ -2,7 +2,7 @@
 
 **Version:** 0.1, implementation baseline
 **Date / documentation checked:** 10 October 2026
-**Status:** Phases 1–5 implemented; live AI verification awaits a private key; later phases await approval. Section 0 and the README define current behavior.
+**Status:** Phases 1–6 implemented; live AI and Supabase verification await the owner’s credentials. Section 0 and the README define current behavior.
 **Product:** Visual Product Intelligence, working product name Architect
 **Companion documents:** [Product requirements](../visual-product-intelligence-prd.md), [six-phase build plan](mvp-build-plan.md)
 
@@ -633,3 +633,13 @@ No Git history, commit attribution, automatic refresh, local watcher, feature-le
 Hosting was separately authorized after Phase 5. The root `vercel.json` uses Vercel Services (beta), superseding the original two-project Vercel plan: public ingress targets only the Next.js frontend, whose server proxy calls the private FastAPI backend through `ARCHITECT_BACKEND_URL` supplied by a service binding. No public backend rewrite exists. The existing internal service secret and workspace checks remain. Both services build and ship in one deployment. Optional provider keys remain server-only and unconfigured. See the README and deployment verification report for actual live status. Phase 6 still awaits approval.
 
 **Verified production URL:** https://productarchitect.vercel.app . Hosted ZIP analysis, sample product views/questions, audience switching and captured-version evidence passed on 10 October 2026; provider credentials remain unconfigured. See [deployment verification](deployment-verification.md).
+
+## Phase 6 implementation amendment — 10 October 2026
+
+- Browser-generated Markdown/JSON reports include capture IDs/times, source graph, confidence/gaps, inventory hashes and current product explanations. Markdown uses internal evidence anchors; full captured contents and reviewed snippet bodies are excluded. Filenames/explanations remain sensitive to the repository.
+- The source viewer uses the native modal dialog lifecycle for keyboard focus and Escape. Component jump/fitting, a relationship list, larger labels and visible focus states reuse the existing map.
+- `DELETE /api/projects/{uuid}` travels through the existing private server proxy and workspace cookie boundary. The backend reads only scoped metadata, verifies the expected workspace/object key, deletes the exact Storage object through the Storage API, then deletes scoped metadata. A failure retains metadata for retry and reports possible source removal. Successful deletion clears the local open capture and comparison entry. No migration or new dependency is needed.
+- Shared JSON-response handling gives readable errors for HTML/non-JSON outages across health, saved scans, interpretation and questions. A scan cancel remains busy until the request settles, avoiding overlapping scan-state resets.
+- Verification: focused deletion and export/error tests plus the existing suite. Live Supabase and OpenAI checks remain pending; mocked SDK/REST tests do not establish live account behavior.
+
+Deletion API reference: [Supabase object deletion route](https://github.com/supabase/storage/blob/master/src/http/routes/object/deleteObjects.ts), [Storage deletion guidance](https://supabase.com/docs/reference/python/storage-from-remove). Reviewed 2026-10-10. Storage is deleted via its API so its object and metadata lifecycle are handled together.

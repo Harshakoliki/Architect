@@ -64,3 +64,25 @@ def load(workspace: str, project_id: str):
         row.pop("source_key", None)
         row["persisted"] = True
         return row
+
+
+def delete(workspace: str, project_id: str):
+    filters = {"workspace_id": f"eq.{workspace}", "id": f"eq.{project_id}"}
+    key = f"{workspace}/{project_id}.json.gz"
+    with client() as connection:
+        response = connection.get("/rest/v1/architect_scans", params={
+            **filters, "select": "source_key", "limit": "1",
+        })
+        response.raise_for_status()
+        rows = response.json()
+        if not rows:
+            return False
+        if rows[0]["source_key"] != key:
+            raise ValueError("Unexpected source location")
+        # Remove source first; a failed metadata delete can safely retry this exact key.
+        response = connection.request("DELETE", "/storage/v1/object/architect-source",
+                                      json={"prefixes": [key]})
+        response.raise_for_status()
+        response = connection.delete("/rest/v1/architect_scans", params=filters)
+        response.raise_for_status()
+        return True

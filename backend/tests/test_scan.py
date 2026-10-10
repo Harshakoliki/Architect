@@ -6,11 +6,9 @@ from uuid import uuid4
 
 import httpx
 import pytest
-from fastapi.testclient import TestClient
 
 from architect import db
 from architect.archive import MAX_UPLOAD, unpack
-from architect.main import app
 from architect.scanner import ScanError, redact, scan
 
 
@@ -20,16 +18,6 @@ def archive(entries):
         for name, content in entries:
             handle.writestr(name, content)
     return output.getvalue()
-
-
-@pytest.fixture
-def client(monkeypatch):
-    monkeypatch.setenv('ARCHITECT_SERVICE_SECRET', 'test-service-secret')
-    monkeypatch.delenv('SUPABASE_URL', raising=False)
-    monkeypatch.delenv('SUPABASE_SECRET_KEY', raising=False)
-    with TestClient(app, headers={'x-architect-secret': 'test-service-secret',
-                                  'x-architect-workspace': 'a' * 64}) as client:
-        yield client
 
 
 def test_real_scan_ignore_privacy_and_frameworks(tmp_path):

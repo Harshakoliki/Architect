@@ -2,14 +2,11 @@
 
 import FlowQuestion from "./flow-question";
 import { useState } from "react";
+import { readResponse } from "@/lib/api";
 import ArchitectureMap, { type Evidence, type GraphData, type GraphNode, type GraphEdge } from "./architecture-map";
 
-type Snippet = Omit<Evidence,"extractor"> & {id:string; content:string};
-export type SourceContext = {snippets:Snippet[]; total_files:number};
-type Step = {id:string; title:string; description:string; evidence_ids:string[]};
-type Flow = {title:string; steps:Step[]; transitions:{source:string; target:string; label:string; evidence_ids:string[]}[]};
-type Feature = {title:string; summary:string; evidence_ids:string[]; journeys:Flow[]; data_flows:Flow[]};
-export type ProductMeaning = {features:Feature[]; gaps:string[]; provider:string; model:string; version:string; evidence:Snippet[]; usage:{input_tokens?:number; output_tokens?:number}};
+import type { ProductMeaning, SourceContext } from "@/lib/types";
+export type { ProductMeaning, SourceContext } from "@/lib/types";
 
 export default function ProductViews({context, meaning, onMeaning, mode, configured, model, sample, contents, onSource, audience, onMode}:{
   context:SourceContext; meaning?:ProductMeaning; onMeaning:(value:ProductMeaning)=>void; mode:string;
@@ -25,8 +22,7 @@ export default function ProductViews({context, meaning, onMeaning, mode, configu
     setBusy(true);setError("");
     try {
       const response = await fetch("/api/interpret",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({context,consent,example})});
-      const result = await response.json();
-      if(!response.ok) throw new Error(result.detail || "Interpretation failed. Your source map is still available.");
+      const result = await readResponse(response);
       onMeaning(result);setFeatureIndex(0);setFlowIndex(0);
     } catch(error) {setError((error as Error).message);} finally {setBusy(false);}
   }

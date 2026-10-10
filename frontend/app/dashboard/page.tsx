@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { readResponse } from "@/lib/api";
+import { exportReport } from "@/lib/export";
 import type { Snapshot, SourceFile } from "@/lib/types";
 import type { ProductMeaning, SourceContext } from "@/components/product-views";
 const HistoryViews = dynamic(() => import("@/components/history-views"), { ssr: false });
@@ -52,22 +54,23 @@ export default function Home() {
   const [limit, setLimit] = useState(60);
   const dialog = useRef<HTMLDialogElement>(null);
   const abort = useRef<AbortController | null>(null);
+  const sourceDialog = useRef<HTMLDialogElement>(null);
 
   async function refreshSaved() {
     const response = await fetch("/api/projects");
-    if (response.ok) setSaved(await response.json());
+    setSaved(await readResponse(response));
   }
   useEffect(() => {
     let active = true;
     fetch("/api/health").then(async response => {
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail);
+      const data = await readResponse(response);
       if (active) { setStorage(data.storage); setAi({configured:!!data.ai_configured,model:data.ai_model || "gpt-6.1-sol"}); await refreshSaved(); }
     }).catch(error => { if (active) { setStorage("unavailable"); setError(error.message); } });
     return () => { active = false; };
   }, []);
   useEffect(() => { if (modal) dialog.current?.showModal(); else dialog.current?.close(); }, [modal]);
   useEffect(() => { setLimit(60); }, [search, folder]);
+  useEffect(() => { if (selected) sourceDialog.current?.showModal(); }, [selected]);
 
   function keepSnapshot(value:Project) {
     setSnapshots(previous=>previous.some(item=>item.id===value.id) ? previous.map(item=>item.id===value.id?value:item) : previous.length<8 ? [...previous,value] : previous);
@@ -86,7 +89,7 @@ export default function Home() {
         headers: sample ? {} : { "Content-Type": "application/zip", "x-project-name": encodeURIComponent(file!.name.replace(/\.zip$/i, "")) },
         body: sample ? undefined : file,
       });
-      if (!response.ok) { const data = await response.json(); throw new Error(data.detail || "Scan failed."); }
+      if (!response.ok) await readResponse(response);
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
       let pending = "", complete = false;
@@ -112,10 +115,29 @@ export default function Home() {
     setError(""); setBusy("Opening saved scan");
     try {
       const response = await fetch(`/api/projects/${id}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail);
+      const data = await readResponse(response);
       openProject(data);
     } catch (error) { setError((error as Error).message); } finally { setBusy(""); }
+  }
+  async function deleteSaved(item: SavedProject) {
+    if (!window.confirm(`Permanently delete “${item.name}” and its saved source? This also removes its open preview and comparison entry. Downloaded copies and provider backups are not affected.`)) return;
+    setError(""); setBusy("Deleting saved scan and source");
+    try {
+      const response = await fetch(`/api/projects/${item.id}`, {method:"DELETE"});
+      if (response.status !== 404) await readResponse(response);
+      setSaved(previous=>previous.filter(value=>value.id !== item.id));
+      setSnapshots(previous=>previous.filter(value=>value.id !== item.id));
+      if (sourceProject?.id === item.id) {setSelected(null);setSourceProject(null);}
+      if (project?.id === item.id) {setProject(null);setMode("overview");}
+    } catch(error) {setError((error as Error).message);} finally {setBusy("");}
+  }
+  function download(format:"markdown"|"json") {
+    if (!project) return;
+    const report = exportReport(project, project.meaning);
+    const url = URL.createObjectURL(new Blob([report[format]], {type:format === "json" ? "application/json" : "text/markdown;charset=utf-8"}));
+    const link = document.createElement("a");
+    link.href = url; link.download = `architect-${project.name.replace(/[^a-z0-9-]/gi,"-").slice(0,60)}-${project.id.slice(0,8)}.${format === "json" ? "json" : "md"}`;
+    link.click(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   function chooseFile(value?: File) {
     if (!value) return;
@@ -145,15 +167,16 @@ export default function Home() {
       <button className={`nav-item ${mode === "overview" ? "active" : ""}`} onClick={() => { setMode("overview"); setSelected(null); setFolder(""); }}><Icon name="grid"/>Overview<span className="nav-dot"/></button>
       <div className="nav-caption layer-caption">EXPLORE YOUR PRODUCT</div>
       {layers.map((layer,i) => <button key={layer} className={`nav-item ${mode === layerModes[i] ? "active" : ""}`} disabled={!project} title="Explore this product perspective" onClick={()=>{setMode(layerModes[i]);setSelected(null);}}><Icon name={i === 5 ? "clock" : "branch"}/>{layer}</button>)}
-      <div className="sidebar-bottom"><div className="status-line"><span className={`status-dot ${storage === "supabase" ? "connected" : ""}`}/>{storage === "supabase" ? "Supabase configured" : storage === "preview" ? "Temporary preview" : "Connecting services"}</div><p>{storage === "supabase" ? "Saved scans belong to this browser workspace." : "Scans disappear on reload. Connect Supabase to save them."}</p><div className="version">Phase 05 <span>Product evolution</span></div></div>
+      <div className="sidebar-bottom"><div className="status-line"><span className={`status-dot ${storage === "supabase" ? "connected" : ""}`}/>{storage === "supabase" ? "Supabase configured" : storage === "preview" ? "Temporary preview" : "Connecting services"}</div><p>{storage === "supabase" ? "Saved scans belong to this browser workspace." : "Scans disappear on reload. Connect Supabase to save them."}</p><div className="version">Phase 06 <span>Evidence you can share</span></div></div>
     </aside>
-    <main>
+    <a className="skip-link" href="#workspace-content">Skip to workspace</a>
+    <main id="workspace-content" tabIndex={-1}>
       <header className="topbar"><div className="breadcrumbs">Workspace <span>/</span> <strong>{layerNames[mode]}</strong></div><span className="top-label"><span className="tiny-dot"/> Evidence starts with code</span><button className="button primary small" onClick={() => { setFile(null); setModal(true); }} disabled={!!busy}><Icon name="upload" size={15}/>Upload repository</button></header>
       <div className="main-content">
-        <div className="page-heading"><div><div className="eyebrow">YOUR SOFTWARE, IN PERSPECTIVE</div><h1>{project ? project.name : "Understand the product behind your code."}</h1><p>{project ? "Static relationships, linked to the code that supports them." : "When product knowledge is scattered across files and people, even a simple question can become a code hunt."}</p></div><span className="phase-tag">05 / PRODUCT EVOLUTION</span></div>
+        <div className="page-heading"><div><div className="eyebrow">YOUR SOFTWARE, IN PERSPECTIVE</div><h1>{project ? project.name : "Understand the product behind your code."}</h1><p>{project ? "Static relationships, linked to the code that supports them." : "When product knowledge is scattered across files and people, even a simple question can become a code hunt."}</p></div><span className="phase-tag">06 / EVIDENCE & CLARITY</span></div>
         {error && <div className="notice error" role="alert">{error}<button onClick={() => setError("")} aria-label="Dismiss error"><Icon name="close"/></button></div>}
         {project?.warning && <div className="notice" role="status">{project.warning}</div>}
-        {busy && <div className="notice progress" role="status"><span className="spinner"/>{busy}<button onClick={() => { abort.current?.abort(); setBusy(""); }}>Stop waiting</button></div>}
+        {busy && <div className="notice progress" role="status"><span className="spinner"/>{busy}{abort.current && <button onClick={() => { abort.current?.abort(); }}>Stop waiting</button>}</div>}
         {!project ? <>
           <section className="welcome-card">
             <div className="canvas-top"><span><span className="tiny-dot"/> THE STARTING POINT</span><span>From source to understanding</span></div>
@@ -165,6 +188,7 @@ export default function Home() {
         </> : <>
           <label className="mobile-view-switch">Explore <select value={mode} onChange={event => {setMode(event.target.value);setSelected(null);}} aria-label="Workspace view"><option value="architecture">Architecture</option><option value="journeys">User journeys</option><option value="data">Data flows</option><option value="features">Feature relationships</option><option value="dependencies">Dependencies</option><option value="history">Live changes</option><option value="overview">File inventory</option></select></label>
           <div className="audience-bar"><span>Explanation level</span><div className="view-switch"><button aria-pressed={audience === "plain"} onClick={()=>setAudience("plain")}>Plain English</button><button aria-pressed={audience === "technical"} onClick={()=>setAudience("technical")}>Technical</button></div><small>Same map. Same evidence.</small></div>
+          <div className="export-bar"><div><strong>Take your evidence with you.</strong><small>Includes maps, current product explanations and source references. Full source is excluded; filenames and explanations remain.</small></div><button className="button ghost small" onClick={()=>download("markdown")}>Download Markdown</button><button className="button ghost small" onClick={()=>download("json")}>Download JSON</button></div>
           <div className="stats">{[["SOURCE FILES",project.summary.file_count.toLocaleString()],["LINES OF SOURCE",project.summary.line_count.toLocaleString()],["LANGUAGES",Object.keys(project.summary.languages).length],["FRAMEWORKS",project.summary.frameworks.join(" · ") || "None detected"]].map(([label,value]) => <div className="stat" key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
           {mode === "history" ? <HistoryViews snapshots={snapshots} current={project} audience={audience} busy={!!busy} onUpload={()=>{setFile(null);setModal(true);}} onSampleNext={()=>{void scan(true,true);}} onKeep={()=>keepSnapshot(project)} onRemove={id=>setSnapshots(previous=>previous.filter(item=>item.id!==id))} onSource={(snapshot,id,start,end)=>openSource(id,start,end,snapshot)}/> : ["journeys","data","features"].includes(mode) ? <ProductViews key={project.id} context={project.ai_context || {snippets:[],total_files:project.files.length}} meaning={project.meaning} onMeaning={meaning=>setProject(value=>value?.id === project.id ? {...value,meaning} : value)} mode={mode} audience={audience} onMode={setMode} configured={ai.configured} model={ai.model} sample={!!project.sample} contents={project.contents} onSource={openSource}/> : mode !== "overview" && project.graph?.nodes ? <ArchitectureMap key={`${project.id}:${mode}`} graph={project.graph} contents={project.contents} mode={mode} audience={audience} onSource={openSource}/> : <section className="explorer"><div className="explorer-toolbar"><h2>Repository overview <span className="count">{project.summary.file_count}</span></h2><div className="view-switch" aria-label="Overview view"><button onClick={() => setView("map")} aria-pressed={view === "map"}>Folders</button><button onClick={() => setView("list")} aria-pressed={view === "list"}>File list</button></div></div>
             {view === "map" && <div className="inventory-map"><div className="map-label">DIRECTORY CONTAINMENT <span>Connections show folders, not runtime dependencies.</span></div><button className={`repo-node ${!folder ? "selected-node" : ""}`} onClick={() => setFolder("")}><Icon name="folder"/><strong>{project.name.replace(" · sample", "")}</strong><small>{project.summary.file_count} files</small></button><div className="tree-trunk"/><div className="folder-nodes">{groups.slice(0, 12).map(([name,count]) => <button key={name} className={`folder-node ${folder === name ? "selected-node" : ""}`} onClick={() => setFolder(folder === name ? "" : name)}><Icon name="folder"/><span>{name}</span><small>{count} files</small></button>)}</div>{groups.length > 12 && <small className="map-overflow">Showing the 12 largest groups. Use the file list to explore all {groups.length} groups.</small>}</div>}
@@ -172,16 +196,16 @@ export default function Home() {
           </section>}
           <div className="analysis-notes"><div><span className="tiny-dot"/>{project.persisted ? "Saved to Supabase" : "Temporary preview · disappears on reload"}</div><div>{project.summary.skipped_count} excluded entries · {Object.keys(project.summary.skip_reasons).join(", ") || "No scan exclusions"}</div><p>{project.summary.coverage} Known secret patterns are masked in source previews; detection is best effort.</p></div>
         </>}
-        {saved.length > 0 && <section className="saved-projects"><div className="section-heading"><h2>Saved scans</h2><span>THIS BROWSER WORKSPACE</span></div>{saved.map(item => <button key={item.id} className="saved-row" onClick={() => load(item.id)} disabled={!!busy}><Icon name="folder"/><span>{item.name}</span><small>{item.summary.file_count} files · {new Date(item.created_at).toLocaleDateString()}</small><Icon name="arrow"/></button>)}</section>}
-        <footer>ARCHITECT<span>Understand the product behind your code.</span><span>Hackathon MVP · Phase 5</span></footer>
+        {saved.length > 0 && <section className="saved-projects"><div className="section-heading"><h2>Saved scans</h2><span>THIS BROWSER WORKSPACE</span></div>{saved.map(item => <div key={item.id} className="saved-scan"><button className="saved-row" onClick={() => load(item.id)} disabled={!!busy}><Icon name="folder"/><span>{item.name}</span><small>{item.summary.file_count} files · {new Date(item.created_at).toLocaleDateString()}</small><Icon name="arrow"/></button><button className="delete-scan" onClick={()=>deleteSaved(item)} disabled={!!busy} aria-label={`Delete saved scan ${item.name}`}>Delete</button></div>)}</section>}
+        <footer>ARCHITECT<span>Understand the product behind your code.</span><span>Hackathon MVP · Phase 6</span></footer>
       </div>
     </main>
-    <dialog ref={dialog} onCancel={() => setModal(false)} onClick={e => { if (e.target === e.currentTarget) setModal(false); }}>
+    <dialog ref={dialog} aria-label="Upload repository" onCancel={() => setModal(false)} onClick={e => { if (e.target === e.currentTarget) setModal(false); }}>
       <div className="modal-header"><span className="eyebrow">A NEW PERSPECTIVE</span><button aria-label="Close upload" onClick={() => setModal(false)}><Icon name="close"/></button></div><h2>Bring your codebase.</h2><p>Upload a small repository ZIP to find supported source connections and a clearer starting point.</p>
       <label className="dropzone" onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); chooseFile(e.dataTransfer.files[0]); }}><Icon name="upload" size={28}/><strong>{file ? file.name : "Choose a ZIP or drop it here"}</strong><span>{file ? `${(file.size / 1024).toFixed(0)} KiB · ready to scan` : "Up to 3 MiB compressed · 20 MiB expanded"}</span><input type="file" accept=".zip,application/zip" onChange={e => chooseFile(e.target.files?.[0])} aria-label="Choose repository ZIP"/></label>
       <div className="upload-disclosure"><strong>Before uploading</strong><p>Remove secrets and private credentials from the ZIP. The entire archive is sent to the analysis server. Known secret files are skipped during analysis, which cannot undo their upload.</p><p>{storage === "supabase" ? "Captured, masked source previews are saved in your configured Supabase project." : "Supabase is not connected: source previews stay in this page until reload. The server uses temporary files during scanning."} OpenAI receives reviewed excerpts only after you explicitly agree in the product views.</p></div>
       {error && <p role="alert" className="modal-error">{error}</p>}<div className="modal-actions"><button className="button ghost" onClick={() => setModal(false)}>Cancel</button><button className="button primary" disabled={!file || !!busy} onClick={() => scan()}>Upload & scan<Icon name="arrow" size={16}/></button></div>
     </dialog>
-    {selected && <aside className="source-panel" aria-label="Source evidence"><div className="source-header"><div><span className="eyebrow">CAPTURED SOURCE</span><h2>{selected.path}</h2></div><button onClick={() => setSelected(null)} aria-label="Close source"><Icon name="close"/></button></div><div className="source-meta">{selected.language} · {selected.lines} lines · SHA256 {selected.hash.slice(0,12)}…<p>Read-only snapshot. Known secret patterns masked.</p><p>{sourceProject?.name} · captured {sourceProject && new Date(sourceProject.created_at).toLocaleString()}</p></div><div className="code-scroll"><pre>{sourceLines.slice(sourcePage * 200, (sourcePage + 1) * 200).map((line,index) => <div className={`code-line ${highlight && sourcePage * 200 + index + 1 >= highlight.start && sourcePage * 200 + index + 1 <= highlight.end ? "evidence-line" : ""}`} key={index}><span>{sourcePage * 200 + index + 1}</span><code>{line || " "}</code></div>)}</pre></div><div className="source-pagination"><button disabled={!sourcePage} onClick={() => setSourcePage(sourcePage - 1)}>Previous</button><span>Lines {sourceLines.length ? sourcePage * 200 + 1 : 0}–{Math.min((sourcePage + 1) * 200,sourceLines.length)}</span><button disabled={(sourcePage + 1) * 200 >= sourceLines.length} onClick={() => setSourcePage(sourcePage + 1)}>Next</button></div></aside>}
+    {selected && <dialog ref={sourceDialog} className="source-panel" aria-label="Source evidence" onCancel={()=>setSelected(null)}><div className="source-header"><div><span className="eyebrow">CAPTURED SOURCE</span><h2>{selected.path}</h2></div><button onClick={() => setSelected(null)} aria-label="Close source"><Icon name="close"/></button></div><div className="source-meta">{selected.language} · {selected.lines} lines · SHA256 {selected.hash.slice(0,12)}…<p>Read-only snapshot. Known secret patterns masked.</p><p>{sourceProject?.name} · captured {sourceProject && new Date(sourceProject.created_at).toLocaleString()}</p></div><div className="code-scroll"><pre>{sourceLines.slice(sourcePage * 200, (sourcePage + 1) * 200).map((line,index) => <div className={`code-line ${highlight && sourcePage * 200 + index + 1 >= highlight.start && sourcePage * 200 + index + 1 <= highlight.end ? "evidence-line" : ""}`} key={index}><span>{sourcePage * 200 + index + 1}</span><code>{line || " "}</code></div>)}</pre></div><div className="source-pagination"><button disabled={!sourcePage} onClick={() => setSourcePage(sourcePage - 1)}>Previous</button><span>Lines {sourceLines.length ? sourcePage * 200 + 1 : 0}–{Math.min((sourcePage + 1) * 200,sourceLines.length)}</span><button disabled={(sourcePage + 1) * 200 >= sourceLines.length} onClick={() => setSourcePage(sourcePage + 1)}>Next</button></div></dialog>}
   </div>;
 }
