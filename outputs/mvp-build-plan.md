@@ -105,6 +105,6 @@ The MVP succeeds when a user can analyze a real supported repository, understand
 
 ## Current state and deferred scope
 
-Only the PRD exists in the project; the folder is not currently initialized as a Git repository. This plan creates no application code or live API calls. Initialization and dependencies belong to Phase 1, after approval.
+Phases 1–3 are implemented and the public repository is https://github.com/Harshakoliki/Architect . Phase 3 has a verified annotated sample and mocked real-SDK tests; a live OpenAI call awaits a private key. The owner deferred hosting and is handling submission. Phase 4 retains its confirmation gate. The hosting amendment and current README supersede older local-only descriptions above.
 
 Authentication, billing, hosted ingestion, remote repository authorization, production telemetry, arbitrary-language support, collaboration, and enterprise controls are deferred. Basic file validation, secret exclusion, API key protection, and evidence accuracy remain part of the MVP.

@@ -8,7 +8,7 @@ export const maxDuration = 60;
 async function proxy(request: NextRequest, context: { params: Promise<{ path: string[] }> }) {
   const { path } = await context.params;
   const endpoint = path.join("/");
-  if (!/^(health|projects(?:\/[a-f0-9-]{36})?|sample|scan)$/.test(endpoint)) {
+  if (!/^(health|projects(?:\/[a-f0-9-]{36})?|sample|scan|interpret)$/.test(endpoint)) {
     return NextResponse.json({ detail: "Unknown endpoint." }, { status: 404 });
   }
   const cookieStore = await cookies();
@@ -33,9 +33,9 @@ async function proxy(request: NextRequest, context: { params: Promise<{ path: st
           const { done, value } = await reader.read();
           if (done) break;
           size += value.byteLength;
-          if (size > 3 * 1024 * 1024) {
+          if (size > (endpoint === "interpret" ? 64_000 : 3 * 1024 * 1024)) {
             await reader.cancel();
-            return NextResponse.json({ detail: "ZIP exceeds 3 MiB." }, { status: 413 });
+            return NextResponse.json({ detail: "Upload exceeds this endpoint's size limit." }, { status: 413 });
           }
           chunks.push(value);
         }

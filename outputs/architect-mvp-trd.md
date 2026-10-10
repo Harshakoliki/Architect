@@ -2,7 +2,7 @@
 
 **Version:** 0.1, implementation baseline
 **Date / documentation checked:** 10 October 2026
-**Status:** Phases 1–2 implemented; later phases await approval. Section 0 and the README define current behavior.
+**Status:** Phases 1–3 implemented; live AI verification awaits a private key; later phases await approval. Section 0 and the README define current behavior.
 **Product:** Visual Product Intelligence, working product name Architect
 **Companion documents:** [Product requirements](../visual-product-intelligence-prd.md), [six-phase build plan](mvp-build-plan.md)
 
@@ -566,3 +566,13 @@ Implemented static coverage: Python AST imports, tree-sitter JS/TS imports/re-ex
 The canvas and relation list share this graph. Architecture includes declared routes and HTTP candidates; Dependencies focuses on module imports/references. Focus, zoom/pan/fit, search, reference filter, edge selection, evidence highlights, motion toggle, and mobile view selection are included. Canvas is bounded to 120 matching nodes; unsupported patterns and full semantic layers remain deferred. Apply the second timestamped Supabase migration to save graph JSON alongside each scan.
 
 This is narrower than the original broad symbol/call-resolution target. Exact implemented limits and verification are in README and `phase-2-verification.md`. Phase 3 remains gated on owner confirmation.
+
+## Phase 3 implementation checkpoint — 2026-10-10
+
+Owner approved Phase 3 and deferred hosting until product completion. Added the official OpenAI Python SDK with a strict Pydantic product schema, consent-gated `/api/interpret`, bounded captured-source context (12 excerpts / 48 KB, each up to 100 lines / 6,000 bytes), credential-pattern masking, safe errors, no tools, store=false, 45-second timeout, zero retries, 6,000 output tokens, and one in-flight request per Python process. Model defaults to documented gpt-6.1-sol and is configurable. Live model/account access remains unverified without a key.
+
+Every feature, step, and transition requires an available excerpt ID. Transitions must name real steps, and duplicate steps are rejected. Claims remain inferred: valid citation IDs do not prove semantics. Source context is returned with the snapshot and submitted by that browser; it is schema/digest checked and remasked, not a cryptographically authenticated server-held capture. It never authorizes arbitrary server file reads.
+
+The three product views reuse the charcoal/red interactive map and source inspector. Feature relationships connect candidate features to cited files, exposing shared code evidence without claiming feature dependencies. Journey/data views offer a feature selector and flow selector. Context review and generation controls collapse after a result. Results are browser-scan cached only and deliberately not written to Supabase yet.
+
+A separately labeled hand-authored document-upload/fingerprinting sample passes the same citation/flow checks; it is available only when the submitted context exactly matches the bundled sample. It makes no OpenAI request. Verification and remaining gaps are recorded in phase-3-verification.md.

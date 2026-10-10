@@ -3,12 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import type { GraphData } from "@/components/architecture-map";
+import type { ProductMeaning, SourceContext } from "@/components/product-views";
+const ProductViews = dynamic(() => import("@/components/product-views"), { ssr: false });
 const ArchitectureMap = dynamic(() => import("@/components/architecture-map"), { ssr: false });
 
 type SourceFile = { id: string; path: string; language: string; size: number; lines: number; hash: string };
 type Summary = { file_count: number; total_bytes: number; line_count: number; languages: Record<string, number>; frameworks: string[]; skipped_count: number; skip_reasons: Record<string, number>; coverage: string };
-type Project = { id: string; name: string; files: SourceFile[]; summary: Summary; contents: Record<string, string>; persisted: boolean; graph?: GraphData; warning?: string; created_at: string };
+type Project = { id: string; name: string; files: SourceFile[]; summary: Summary; contents: Record<string, string>; persisted: boolean; graph?: GraphData; ai_context?: SourceContext; meaning?: ProductMeaning; sample?: boolean; warning?: string; created_at: string };
 type SavedProject = Pick<Project, "id" | "name" | "summary" | "created_at">;
+const layerModes = ["architecture", "journeys", "data", "features", "dependencies", "history"];
+const layerNames:Record<string,string> = {overview:"Overview",architecture:"Architecture",journeys:"User journeys",data:"Data flows",features:"Feature relationships",dependencies:"Dependencies"};
 const layers = ["Product architecture", "User journeys", "Data flows", "Feature relationships", "Dependencies", "Live changes"];
 
 function Icon({ name, size = 18 }: { name: string; size?: number }) {
@@ -31,6 +35,7 @@ export default function Home() {
   const [project, setProject] = useState<Project | null>(null);
   const [saved, setSaved] = useState<SavedProject[]>([]);
   const [storage, setStorage] = useState("connecting");
+  const [ai,setAi] = useState({configured:false,model:"gpt-6.1-sol"});
   const [modal, setModal] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState("");
@@ -55,7 +60,7 @@ export default function Home() {
     fetch("/api/health").then(async response => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.detail);
-      if (active) { setStorage(data.storage); await refreshSaved(); }
+      if (active) { setStorage(data.storage); setAi({configured:!!data.ai_configured,model:data.ai_model || "gpt-6.1-sol"}); await refreshSaved(); }
     }).catch(error => { if (active) { setStorage("unavailable"); setError(error.message); } });
     return () => { active = false; };
   }, []);
@@ -119,6 +124,10 @@ export default function Home() {
   }, {})).sort((a, b) => b[1] - a[1]) : [];
   const filtered = project?.files.filter(source => source.path.toLowerCase().includes(search.toLowerCase()) &&
     (!folder || (folder === "Root files" ? !source.path.includes("/") : source.path.startsWith(folder + "/")))) || [];
+  function openSource(id:string,start:number,end:number) {
+    const source = project?.files.find(file=>file.id === id);
+    if(source){setSelected(source);setSourcePage(Math.floor((start-1)/200));setHighlight({start,end});}
+  }
   const content = selected ? project?.contents[selected.id] || "" : "";
   const sourceLines = content ? content.replace(/\r?\n$/, "").split(/\r\n|\n|\r/) : [];
 
@@ -129,13 +138,13 @@ export default function Home() {
       <div className="nav-caption">WORKSPACE</div>
       <button className={`nav-item ${mode === "overview" ? "active" : ""}`} onClick={() => { setMode("overview"); setSelected(null); setFolder(""); }}><Icon name="grid"/>Overview<span className="nav-dot"/></button>
       <div className="nav-caption layer-caption">EXPLORE YOUR PRODUCT</div>
-      {layers.map((layer, i) => <button key={layer} className={`nav-item ${i !== 0 && i !== 4 ? "future" : ""} ${mode === (i === 0 ? "architecture" : i === 4 ? "dependencies" : "") ? "active" : ""}`} disabled={(i !== 0 && i !== 4) || !project} title={i === 0 || i === 4 ? "Open a repository to explore" : `Available in Phase ${i === 5 ? 5 : 3}`} onClick={() => {setMode(i === 0 ? "architecture" : "dependencies");setSelected(null);}}><Icon name={i === 5 ? "clock" : "branch"}/>{layer}{i !== 0 && i !== 4 && <span className="soon">Soon</span>}</button>)}
-      <div className="sidebar-bottom"><div className="status-line"><span className={`status-dot ${storage === "supabase" ? "connected" : ""}`}/>{storage === "supabase" ? "Supabase configured" : storage === "preview" ? "Temporary preview" : "Connecting services"}</div><p>{storage === "supabase" ? "Saved scans belong to this browser workspace." : "Scans disappear on reload. Connect Supabase to save them."}</p><div className="version">Phase 02 <span>Evidence graph</span></div></div>
+      {layers.map((layer,i) => <button key={layer} className={`nav-item ${i === 5 ? "future" : ""} ${mode === layerModes[i] ? "active" : ""}`} disabled={i === 5 || !project} title={i === 5 ? "Available in Phase 5" : "Explore this product perspective"} onClick={()=>{setMode(layerModes[i]);setSelected(null);}}><Icon name={i === 5 ? "clock" : "branch"}/>{layer}{i === 5 && <span className="soon">Soon</span>}</button>)}
+      <div className="sidebar-bottom"><div className="status-line"><span className={`status-dot ${storage === "supabase" ? "connected" : ""}`}/>{storage === "supabase" ? "Supabase configured" : storage === "preview" ? "Temporary preview" : "Connecting services"}</div><p>{storage === "supabase" ? "Saved scans belong to this browser workspace." : "Scans disappear on reload. Connect Supabase to save them."}</p><div className="version">Phase 03 <span>Product meaning</span></div></div>
     </aside>
     <main>
-      <header className="topbar"><div className="breadcrumbs">Workspace <span>/</span> <strong>{mode === "overview" ? "Overview" : mode === "architecture" ? "Architecture" : "Dependencies"}</strong></div><span className="top-label"><span className="tiny-dot"/> Evidence starts with code</span><button className="button primary small" onClick={() => { setFile(null); setModal(true); }} disabled={!!busy}><Icon name="upload" size={15}/>Upload repository</button></header>
+      <header className="topbar"><div className="breadcrumbs">Workspace <span>/</span> <strong>{layerNames[mode]}</strong></div><span className="top-label"><span className="tiny-dot"/> Evidence starts with code</span><button className="button primary small" onClick={() => { setFile(null); setModal(true); }} disabled={!!busy}><Icon name="upload" size={15}/>Upload repository</button></header>
       <div className="main-content">
-        <div className="page-heading"><div><div className="eyebrow">YOUR SOFTWARE, IN PERSPECTIVE</div><h1>{project ? project.name : "See the bigger picture."}</h1><p>{project ? "Static relationships, linked to the code that supports them." : "Start with your code. Build a clearer understanding of how it fits together."}</p></div><span className="phase-tag">02 / EVIDENCE GRAPH</span></div>
+        <div className="page-heading"><div><div className="eyebrow">YOUR SOFTWARE, IN PERSPECTIVE</div><h1>{project ? project.name : "See the bigger picture."}</h1><p>{project ? "Static relationships, linked to the code that supports them." : "Start with your code. Build a clearer understanding of how it fits together."}</p></div><span className="phase-tag">03 / PRODUCT MEANING</span></div>
         {error && <div className="notice error" role="alert">{error}<button onClick={() => setError("")} aria-label="Dismiss error"><Icon name="close"/></button></div>}
         {project?.warning && <div className="notice" role="status">{project.warning}</div>}
         {busy && <div className="notice progress" role="status"><span className="spinner"/>{busy}<button onClick={() => { abort.current?.abort(); setBusy(""); }}>Stop waiting</button></div>}
@@ -145,19 +154,19 @@ export default function Home() {
             <div className="welcome-flow"><div className="flow-node selected-node"><Icon name="upload"/><span>Your repository<small>A ZIP of your source files</small></span></div><div className="flow-edge"><Icon name="arrow"/></div><div className="flow-node"><Icon name="file"/><span>Source inventory<small>Files, languages & frameworks</small></span></div><div className="flow-edge"><Icon name="arrow"/></div><div className="flow-node"><Icon name="branch"/><span>Connected insights<small>Imports, routes & source evidence</small></span></div></div>
             <div className="welcome-copy"><h2>Every great map starts<br/>with a place to begin.</h2><p>Bring a small repository or explore our sample.<br/>We’ll scan the source without running its code.</p><div className="actions"><button className="button primary" onClick={() => { setFile(null); setModal(true); }} disabled={!!busy}>Upload your repository<Icon name="arrow" size={16}/></button><button className="button ghost" onClick={() => scan(true)} disabled={!!busy}>Explore sample <span>↗</span></button></div><div className="fine-print">ZIP up to 3 MiB · No GitHub connection required</div></div>
           </section>
-          <div className="section-heading"><h2>One product. Six perspectives.</h2><span>THE ROAD AHEAD</span></div>
+          <div className="section-heading"><h2>One product. Six perspectives.</h2><span>CONNECTED PERSPECTIVES</span></div>
           <div className="perspective-grid">{[{title:"How it’s built",body:"Architecture & dependencies",number:"01 / 05"},{title:"How it works",body:"Journeys, data & features",number:"02 / 03 / 04"},{title:"How it evolves",body:"Changes & product history",number:"06"}].map(item => <div className="perspective" key={item.title}><span>{item.number}</span><h3>{item.title}</h3><p>{item.body}</p></div>)}</div>
         </> : <>
-          <label className="mobile-view-switch">Explore <select value={mode} onChange={event => {setMode(event.target.value);setSelected(null);}} aria-label="Workspace view"><option value="architecture">Architecture</option><option value="dependencies">Dependencies</option><option value="overview">File inventory</option></select></label>
+          <label className="mobile-view-switch">Explore <select value={mode} onChange={event => {setMode(event.target.value);setSelected(null);}} aria-label="Workspace view"><option value="architecture">Architecture</option><option value="journeys">User journeys</option><option value="data">Data flows</option><option value="features">Feature relationships</option><option value="dependencies">Dependencies</option><option value="overview">File inventory</option></select></label>
           <div className="stats">{[["SOURCE FILES",project.summary.file_count.toLocaleString()],["LINES OF SOURCE",project.summary.line_count.toLocaleString()],["LANGUAGES",Object.keys(project.summary.languages).length],["FRAMEWORKS",project.summary.frameworks.join(" · ") || "None detected"]].map(([label,value]) => <div className="stat" key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
-          {mode !== "overview" && project.graph?.nodes ? <ArchitectureMap key={`${project.id}:${mode}`} graph={project.graph} contents={project.contents} mode={mode} onSource={(id,start,end) => { const source = project.files.find(file => file.id === id); if(source){setSelected(source);setSourcePage(Math.floor((start-1)/200));setHighlight({start,end});} }}/> : <section className="explorer"><div className="explorer-toolbar"><h2>Repository overview <span className="count">{project.summary.file_count}</span></h2><div className="view-switch" aria-label="Overview view"><button onClick={() => setView("map")} aria-pressed={view === "map"}>Folders</button><button onClick={() => setView("list")} aria-pressed={view === "list"}>File list</button></div></div>
+          {["journeys","data","features"].includes(mode) ? <ProductViews key={project.id} context={project.ai_context || {snippets:[],total_files:project.files.length}} meaning={project.meaning} onMeaning={meaning=>setProject(value=>value?.id === project.id ? {...value,meaning} : value)} mode={mode} configured={ai.configured} model={ai.model} sample={!!project.sample} contents={project.contents} onSource={openSource}/> : mode !== "overview" && project.graph?.nodes ? <ArchitectureMap key={`${project.id}:${mode}`} graph={project.graph} contents={project.contents} mode={mode} onSource={openSource}/> : <section className="explorer"><div className="explorer-toolbar"><h2>Repository overview <span className="count">{project.summary.file_count}</span></h2><div className="view-switch" aria-label="Overview view"><button onClick={() => setView("map")} aria-pressed={view === "map"}>Folders</button><button onClick={() => setView("list")} aria-pressed={view === "list"}>File list</button></div></div>
             {view === "map" && <div className="inventory-map"><div className="map-label">DIRECTORY CONTAINMENT <span>Connections show folders, not runtime dependencies.</span></div><button className={`repo-node ${!folder ? "selected-node" : ""}`} onClick={() => setFolder("")}><Icon name="folder"/><strong>{project.name.replace(" · sample", "")}</strong><small>{project.summary.file_count} files</small></button><div className="tree-trunk"/><div className="folder-nodes">{groups.slice(0, 12).map(([name,count]) => <button key={name} className={`folder-node ${folder === name ? "selected-node" : ""}`} onClick={() => setFolder(folder === name ? "" : name)}><Icon name="folder"/><span>{name}</span><small>{count} files</small></button>)}</div>{groups.length > 12 && <small className="map-overflow">Showing the 12 largest groups. Use the file list to explore all {groups.length} groups.</small>}</div>}
             <div className="file-area"><div className="file-toolbar"><label className="search"><Icon name="search" size={16}/><input placeholder="Find a file…" value={search} onChange={e => setSearch(e.target.value)} aria-label="Find a source file"/></label><span>{filtered.length} files {folder && <button className="filter-chip" onClick={() => setFolder("")}>{folder} ×</button>}</span></div><div className="file-table"><div className="file-row table-heading"><span>FILE / PATH</span><span>LANGUAGE</span><span>LINES</span><span/></div>{filtered.slice(0, limit).map(source => <button className={`file-row ${selected?.id === source.id ? "chosen" : ""}`} key={source.id} onClick={() => { setSelected(source); setSourcePage(0); setHighlight(null); }}><span><Icon name="file" size={16}/>{source.path}</span><span>{source.language}</span><span>{source.lines}</span><Icon name="arrow" size={16}/></button>)}{!filtered.length && <p className="empty-list">No files match this search.</p>}{filtered.length > limit && <button className="button ghost load-more" onClick={() => setLimit(limit + 60)}>Show more files</button>}</div></div>
           </section>}
           <div className="analysis-notes"><div><span className="tiny-dot"/>{project.persisted ? "Saved to Supabase" : "Temporary preview · disappears on reload"}</div><div>{project.summary.skipped_count} excluded entries · {Object.keys(project.summary.skip_reasons).join(", ") || "No scan exclusions"}</div><p>{project.summary.coverage} Known secret patterns are masked in source previews; detection is best effort.</p></div>
         </>}
         {saved.length > 0 && <section className="saved-projects"><div className="section-heading"><h2>Saved scans</h2><span>THIS BROWSER WORKSPACE</span></div>{saved.map(item => <button key={item.id} className="saved-row" onClick={() => load(item.id)} disabled={!!busy}><Icon name="folder"/><span>{item.name}</span><small>{item.summary.file_count} files · {new Date(item.created_at).toLocaleDateString()}</small><Icon name="arrow"/></button>)}</section>}
-        <footer>ARCHITECT<span>Understand what you’re building.</span><span>Hackathon MVP · Phase 2</span></footer>
+        <footer>ARCHITECT<span>Understand what you’re building.</span><span>Hackathon MVP · Phase 3</span></footer>
       </div>
     </main>
     <dialog ref={dialog} onCancel={() => setModal(false)} onClick={e => { if (e.target === e.currentTarget) setModal(false); }}>

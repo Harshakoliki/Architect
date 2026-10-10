@@ -10,13 +10,22 @@ from uuid import UUID, uuid4
 import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse, StreamingResponse
+from pydantic import ValidationError
+from starlette.concurrency import run_in_threadpool
 
 from . import db
 from .analyzer import build_graph
 from .archive import MAX_UPLOAD, unpack
+from .product import (
+    InterpretationRequest,
+    annotated_example,
+    interpret,
+    make_context,
+    validate_context,
+)
 from .scanner import ScanError, redact, scan
 
-app = FastAPI(title="Architect", version="0.1.0")
+app = FastAPI(title="Architect", version="0.3.0")
 SAMPLE = Path(__file__).parent.parent / "fixtures" / "document-app"
 
 
@@ -34,7 +43,9 @@ async def server_boundary(request: Request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"storage": "supabase" if db.configured() else "preview", "phase": 2}
+    return {"storage": "supabase" if db.configured() else "preview", "phase": 3,
+            "ai_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "ai_model": os.getenv("OPENAI_MODEL") or "gpt-6.1-sol"}
 
 
 @app.get("/api/projects")
@@ -57,6 +68,7 @@ def get_project(project_id: UUID, request: Request):
         raise HTTPException(503, "This saved scan could not be loaded.") from None
     if result is None:
         raise HTTPException(404, "Scan not found in this workspace.")
+    result["ai_context"] = make_context(result["files"], result["contents"], result.get("graph", {}))
     return result
 
 
@@ -81,6 +93,7 @@ def events(data: bytes | None, name: str, workspace: str):
         graph = build_graph(files)
         summary["coverage"] = graph["coverage"]
         contents = {file["id"]: redact(file.pop("content")) for file in files}
+        context = make_context(files, contents, graph)
         project = {"id": str(uuid4()), "name": name, "files": files, "summary": summary,
                    "created_at": datetime.now(UTC).isoformat(), "persisted": False, "graph": graph}
         if db.configured():
@@ -91,6 +104,8 @@ def events(data: bytes | None, name: str, workspace: str):
             except httpx.HTTPError:
                 project["warning"] = "Scan complete, but saving failed. This is a temporary preview. Check Supabase setup."
         project["contents"] = contents
+        project["ai_context"] = context
+        project["sample"] = data is None
         yield event({"stage": "complete", "project": project})
     except ScanError as error:
         yield event({"stage": "error", "message": str(error)})
@@ -116,3 +131,32 @@ async def upload(request: Request):
     name = re.sub(r"[^\w .-]", "", unquote(request.headers.get("x-project-name", "repository")))[:80]
     return StreamingResponse(events(bytes(data), name or "repository", request.state.workspace),
                              media_type="application/x-ndjson", headers={"Cache-Control": "no-store"})
+
+
+def product_result(body: InterpretationRequest):
+    context = validate_context(body.context)
+    if body.example:
+        files, _ = scan(SAMPLE)
+        graph = build_graph(files)
+        expected = make_context(files, {file["id"]: redact(file["content"]) for file in files}, graph)
+        return annotated_example(context, expected)
+    if not body.consent:
+        raise ValueError("Confirm sending the listed source excerpts to OpenAI before continuing.")
+    return interpret(context)
+
+
+@app.post("/api/interpret")
+async def product_interpretation(request: Request):
+    data = bytearray()
+    async for chunk in request.stream():
+        data.extend(chunk)
+        if len(data) > 64_000:
+            raise HTTPException(413, "Interpretation context exceeds 64 KB.")
+    try:
+        body = InterpretationRequest.model_validate_json(data)
+    except ValidationError:
+        raise HTTPException(422, "Invalid interpretation request. Reopen the source scan.") from None
+    try:
+        return await run_in_threadpool(product_result, body)
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from None

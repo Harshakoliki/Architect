@@ -6,8 +6,8 @@ import dagre from "@dagrejs/dagre";
 import "@xyflow/react/dist/style.css";
 
 export type Evidence = { file_id: string; path: string; start_line: number; end_line: number; extractor: string; source_hash: string };
-export type GraphNode = { id: string; kind: string; label: string; file_id?: string; line?: number; language?: string; description?: string };
-export type GraphEdge = { id: string; source: string; target: string; kind: string; confidence: string; evidence: Evidence[] };
+export type GraphNode = { id: string; kind: string; label: string; file_id?: string; line?: number; language?: string; description?: string; confidence?: string; evidence?: Evidence[] };
+export type GraphEdge = { id: string; source: string; target: string; kind: string; confidence: string; label?: string; evidence: Evidence[] };
 export type GraphData = { nodes: GraphNode[]; edges: GraphEdge[]; gaps: (Partial<Evidence> & { message: string })[]; analyzer_version: string; parsed_files: number; coverage: string };
 type CardNode = Node<{ label: string; kind: string; subtitle: string; excerpt: string; active: boolean }, "card">;
 const labels: Record<string,string> = { imports: "imports", references: "references", unresolved: "unresolved", implemented_by: "implemented by", http_candidate: "HTTP candidate" };
@@ -22,10 +22,11 @@ function Card({ data }: NodeProps<CardNode>) {
   </div>;
 }
 const nodeTypes = { card: Card };
+function edgeLabel(edge: GraphEdge) { return edge.label || labels[edge.kind] || edge.kind; }
 const initialFitOptions = { padding: .2, maxZoom: 1 };
 
-export default function ArchitectureMap({ graph, contents, mode, onSource }: {
-  graph: GraphData; contents: Record<string,string>; mode: string; onSource: (id: string,line: number,end: number) => void;
+export default function ArchitectureMap({ graph, contents, mode, onSource, title }: {
+  graph: GraphData; contents: Record<string,string>; mode: string; onSource: (id: string,line: number,end: number) => void; title?: string;
 }) {
   const [query, setQuery] = useState("");
   const [focus, setFocus] = useState("");
@@ -70,14 +71,14 @@ export default function ArchitectureMap({ graph, contents, mode, onSource }: {
   const edges = shownEdges.map(edge => {
     const active = selectedEdge ? edge.id === selectedEdge.id : focus ? edge.source === focus || edge.target === focus : false;
     const color = edge.confidence === "unknown" ? "#bc5d70" : active ? "#dc6674" : edge.confidence === "inferred" ? "#ad7b86" : "#8e4b59";
-    return {...edge,type:"smoothstep",label:labels[edge.kind] || edge.kind,
+    return {...edge,type:"smoothstep",label:edgeLabel(edge),
       animated:active && moving,className:active ? "edge-active" : "",focusable:true,
       markerEnd:{type:MarkerType.ArrowClosed,color,width:14,height:14},
       style:{stroke:color,strokeWidth:active ? 2 : 1.3,opacity:highlighted.size && !active ? .25 : 1,
         strokeDasharray:edge.confidence !== "observed" ? "5 5" : undefined},
       labelStyle:{fill:active ? "#e0c6d0" : "#b7a9b0",fontSize:9},
       labelBgStyle:{fill:"#1b181c",stroke:color,strokeWidth:.5},labelBgPadding:[9,4] as [number,number],labelBgBorderRadius:10,
-      ariaLabel:`${byId.get(edge.source)?.label} ${labels[edge.kind]} ${byId.get(edge.target)?.label}; ${edge.confidence}`,
+      ariaLabel:`${byId.get(edge.source)?.label} ${edgeLabel(edge)} ${byId.get(edge.target)?.label}; ${edge.confidence}`,
     };
   });
   function focusOn(ids: string[]) {
@@ -85,8 +86,8 @@ export default function ArchitectureMap({ graph, contents, mode, onSource }: {
   }
   const selectEdge = (edge: GraphEdge) => {setEdgeId(edge.id);setFocus("");focusOn([edge.source,edge.target]);};
   return <section className="graph-section">
-    <div className="graph-toolbar"><div><span className="eyebrow">SOURCE-DERIVED RELATIONSHIPS</span><h2>{mode === "dependencies" ? "What depends on what." : "Your architecture, connected."}</h2></div><span className="graph-status"><span className="tiny-dot"/> {graph.parsed_files} files parsed</span></div>
-    <div className="graph-filters"><label className="search"><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Find a component…" aria-label="Find a graph component"/></label><label><input type="checkbox" checked={references} onChange={event => setReferences(event.target.checked)}/>Module references</label><label><input type="checkbox" checked={moving} onChange={event => setMoving(event.target.checked)}/>Flow motion</label><button onClick={() => {setFocus("");setEdgeId("");setQuery("");}}>Clear focus</button></div>
+    <div className="graph-toolbar"><div><span className="eyebrow">{mode === "product" ? "INTERPRETED PRODUCT FLOWS" : "SOURCE-DERIVED RELATIONSHIPS"}</span><h2>{title || (mode === "dependencies" ? "What depends on what." : "Your architecture, connected.")}</h2></div><span className="graph-status"><span className="tiny-dot"/> {graph.parsed_files} {mode === "product" ? "source excerpts" : "files parsed"}</span></div>
+    <div className="graph-filters"><label className="search"><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Find a component…" aria-label="Find a graph component"/></label>{mode !== "product" && <label><input type="checkbox" checked={references} onChange={event => setReferences(event.target.checked)}/>Module references</label>}<label><input type="checkbox" checked={moving} onChange={event => setMoving(event.target.checked)}/>Flow motion</label><button onClick={() => {setFocus("");setEdgeId("");setQuery("");}}>Clear focus</button></div>
     <div className="graph-workspace"><div className="graph-canvas">
       {shown.length ? <ReactFlow key={`${mode}:${query}:${references}`} nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView fitViewOptions={initialFitOptions} minZoom={.15} maxZoom={2} onInit={setCanvas} colorMode="dark" nodesConnectable={false} nodesDraggable={false} elementsSelectable deleteKeyCode={null}
         onNodeClick={(_,node) => {setFocus(node.id);setEdgeId("");}}
@@ -98,17 +99,17 @@ export default function ArchitectureMap({ graph, contents, mode, onSource }: {
         }}>
         <Background color="#3a3037" gap={22} size={.7}/><Controls showInteractive={false}/><MiniMap nodeColor={node => node.data.kind === "route" ? "#996577" : "#4d3b46"} pannable zoomable/>
       </ReactFlow> : <div className="graph-empty">{query ? "No supported relationships match this search." : "No supported source modules in this scan. The inventory remains available."}</div>}
-      <div className="graph-legend"><span><i/>Observed</span><span><i className="inferred"/>Candidate</span><span><i className="unknown"/>Unresolved</span></div>
+      <div className="graph-legend">{mode === "product" ? <span><i className="inferred"/>Inferred · review source evidence</span> : <><span><i/>Observed</span><span><i className="inferred"/>Candidate</span><span><i className="unknown"/>Unresolved</span></>}</div>
     </div><aside className="graph-inspector" aria-label="Connection inspector">
       <span className="eyebrow">THE EVIDENCE</span>
-      {selectedEdge ? <><h3>{labels[selectedEdge.kind]}</h3><span className={`confidence ${selectedEdge.confidence}`}>{selectedEdge.confidence}</span><p className="relationship-text">{byId.get(selectedEdge.source)?.label}<span>↓</span>{byId.get(selectedEdge.target)?.label}</p>
+      {selectedEdge ? <><h3>{edgeLabel(selectedEdge)}</h3><span className={`confidence ${selectedEdge.confidence}`}>{selectedEdge.confidence}</span><p className="relationship-text">{byId.get(selectedEdge.source)?.label}<span>↓</span>{byId.get(selectedEdge.target)?.label}</p>
         {selectedEdge.kind === "http_candidate" && <p className="inspector-note">Matched by literal HTTP method and path. Routing, service origin, and execution are not proven.</p>}
         {selectedEdge.kind === "references" && <p className="inspector-note">The import is observed. The module is outside the captured source or cannot be resolved here.</p>}
         {selectedEdge.evidence.map((proof,index) => <div className="proof-card" key={index}><span>{proof.extractor}</span><strong>{proof.path}:{proof.start_line}</strong><pre>{(contents[proof.file_id] || "").split(/\r?\n/).slice(proof.start_line-1,Math.min(proof.end_line,proof.start_line+7)).join("\n")}</pre><button onClick={() => onSource(proof.file_id,proof.start_line,proof.end_line)}>Open supporting source ↗</button></div>)}
-      </> : focusNode ? <><h3>{focusNode.label}</h3><span className="confidence observed">{focusNode.kind}</span><p className="inspector-note">{focusNode.description || "Select a connection below to inspect its evidence."}</p>{focusNode.file_id && <button className="button ghost" onClick={() => onSource(focusNode.file_id!,focusNode.line || 1,focusNode.line || 1)}>Open source ↗</button>}<button className="button ghost focus-selection" onClick={() => focusOn([...highlighted])}>Focus this component</button><h4>Direct relationships ({related.length})</h4>{related.slice(0,30).map(edge => <button className="related-edge" key={edge.id} onClick={() => selectEdge(edge)}><span>{edge.source === focus ? "OUT →" : "IN ←"} {labels[edge.kind]}</span>{byId.get(edge.source === focus ? edge.target : edge.source)?.label}</button>)}{!related.length && <p className="inspector-note">No supported direct relationships were found. This does not prove the file is unused.</p>}</> : <><div className="inspector-placeholder">↗</div><h3>Follow a connection.</h3><p className="inspector-note">Select a card to see its direct relationships. Select a line to see the source that supports it.</p><div className="inspector-divider"/><p className="inspector-note">Arrows follow the labeled relationship. This is static source analysis, not a live execution trace. Motion guides your attention.</p></>}
+      </> : focusNode ? <><h3>{focusNode.label}</h3><span className={`confidence ${focusNode.confidence || "observed"}`}>{focusNode.confidence || focusNode.kind}</span><p className="inspector-note">{focusNode.description || "Select a connection below to inspect its evidence."}</p>{focusNode.file_id && <button className="button ghost" onClick={() => onSource(focusNode.file_id!,focusNode.line || 1,focusNode.line || 1)}>Open source ↗</button>}<button className="button ghost focus-selection" onClick={() => focusOn([...highlighted])}>Focus this component</button>{focusNode.evidence?.map((proof,index) => <div className="proof-card" key={index}><span>{proof.extractor}</span><strong>{proof.path}:{proof.start_line}–{proof.end_line}</strong><button onClick={() => onSource(proof.file_id,proof.start_line,proof.end_line)}>Open supporting source ↗</button></div>)}<h4>Direct relationships ({related.length})</h4>{related.slice(0,30).map(edge => <button className="related-edge" key={edge.id} onClick={() => selectEdge(edge)}><span>{edge.source === focus ? "OUT →" : "IN ←"} {edgeLabel(edge)}</span>{byId.get(edge.source === focus ? edge.target : edge.source)?.label}</button>)}{!related.length && <p className="inspector-note">No supported direct relationships were found. This does not prove the file is unused.</p>}</> : <><div className="inspector-placeholder">↗</div><h3>Follow a connection.</h3><p className="inspector-note">Select a card to see its direct relationships. Select a line to see the source that supports it.</p><div className="inspector-divider"/><p className="inspector-note">{mode === "product" ? "Product steps and flow order are inferred from source excerpts and require review. Motion guides attention; it is not a runtime trace." : "Arrows follow the labeled relationship. This is static source analysis, not a live execution trace. Motion guides your attention."}</p></>}
     </aside></div>
-    <div className="graph-footnote">Showing {shown.length} of {candidates.length} matching nodes · {shownEdges.length} visible connections · {graph.gaps.length} extraction gaps. {candidates.length > 120 && "Refine search to explore beyond the 120-node canvas limit."}</div>
-    <details className="relationship-list"><summary>Browse relationships as a list ({shownEdges.length})</summary>{shownEdges.map(edge => <button key={edge.id} onClick={() => selectEdge(edge)}>{byId.get(edge.source)?.label}<span>{labels[edge.kind]} →</span>{byId.get(edge.target)?.label}<small>{edge.confidence}</small></button>)}</details>
+    <div className="graph-footnote">Showing {shown.length} of {candidates.length} matching nodes · {shownEdges.length} visible connections · {mode === "product" ? "inferred relationships · review the gaps below." : `${graph.gaps.length} extraction gaps.`} {candidates.length > 120 && "Refine search to explore beyond the 120-node canvas limit."}</div>
+    <details className="relationship-list"><summary>Browse relationships as a list ({shownEdges.length})</summary>{shownEdges.map(edge => <button key={edge.id} onClick={() => selectEdge(edge)}>{byId.get(edge.source)?.label}<span>{edgeLabel(edge)} →</span>{byId.get(edge.target)?.label}<small>{edge.confidence}</small></button>)}</details>
     {graph.gaps.length > 0 && <details className="relationship-list gap-list"><summary>Known gaps ({graph.gaps.length})</summary>{graph.gaps.slice(0,100).map((gap,index) => <div key={index}><strong>{gap.path}:{gap.start_line}</strong><span>{gap.message}</span>{gap.file_id && <button onClick={() => onSource(gap.file_id!,gap.start_line || 1,gap.start_line || 1)}>Inspect source ↗</button>}</div>)}</details>}
   </section>;
 }

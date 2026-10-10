@@ -36,3 +36,7 @@ This supersedes earlier citron/green guidance: charcoal wireframe cards, muted r
 connections, circular ports, and clear small labels. Selected paths use restrained red
 and directional motion, with smooth focus transitions. No neon/glow styling. Confidence
 is conveyed by text and solid/dashed lines, not a green/red trust legend.
+
+## Phase 3 product views
+
+Feature/source, user-journey, and data-flow views reuse the charcoal/red cards, circular ports, connection labels, selected-edge motion, smooth focus, and source inspector. Product interpretations have their own inferred legend and explicit provider label. Generation/source-review controls collapse after a result to keep the map prominent. No green or neon palette was introduced.
