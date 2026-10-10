@@ -34,6 +34,12 @@ Architect aims to turn access to code into practical understanding of a product.
 
 The current MVP demonstrates the mechanism through supported source extraction, inspectable evidence, bounded product-flow examples, version comparison and reports. User impact still needs validation: measure whether builders can correctly explain a feature, find its implementation, recognize missing context and review a change with less repeated investigation. Do not present passing tests as proof of productivity gains.
 
+## Privacy and trust as product value
+
+Builders should understand where their code goes when they ask for an explanation. Architect supports local scanning with cloud providers disabled, optional OpenAI interpretation after source review and explicit consent, and confirmed deletion of saved Supabase captures. The scanner never executes the analyzed repository or installs its dependencies. Evidence reports omit full source bodies while retaining filenames, relationships and explanations for review before sharing.
+
+The hosted MVP sends uploaded ZIPs to Vercel; it cannot promise that code stays on the user’s computer. Secret masking is best effort, workspace cookies are not user accounts, deletion does not clear provider backups or downloaded copies, and live Supabase verification remains pending. Use public/sample code for the public demo. A local companion and mature team security controls belong to the future product vision.
+
 ## Short pitch
 
 Your team has the code. Understanding how the product fits together can still mean hunting through files and asking the people who built it. Architect makes supported connections visible through interactive maps, cited feature flows, and Plain English or Technical explanations. Follow a product question to the relevant flow, inspect its source, and give the team a clearer starting point for the next conversation.

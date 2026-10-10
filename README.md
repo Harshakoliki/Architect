@@ -61,6 +61,19 @@ The impact we want to create:
 
 **How we will validate the impact:** ask builders to explain a feature, locate its supporting files, and review a change using their usual tools and Architect. Measure time to a correct answer, explanation accuracy, recognition of missing context, and whether they can repeat the task independently. Until those studies are run, faster onboarding, fewer interruptions and better change decisions remain hypotheses.
 
+## Privacy is part of the product’s value
+
+Understanding a codebase requires access to valuable information: business logic, internal structure and sometimes sensitive identifiers. **Architect aims to give builders control over where analysis runs, when AI receives source, and which saved captures they keep.** Trust depends on making those choices visible.
+
+- **Local scanning is available today:** run both services on your computer with Supabase and OpenAI disabled to inspect supported source without sending it to either provider.
+- **AI is optional and deliberate:** basic scanning and the annotated demo work without OpenAI. AI interpretation requires reviewing the listed excerpts, checking consent and clicking generation; flow questions have a separate consent step.
+- **Your repository is never executed by the scanner:** analysis reads supported source and extracts relationships without running its scripts or installing its dependencies.
+- **Saved captures have a delete control:** when Supabase is configured, confirmed deletion removes the workspace’s saved source object and scan metadata. Exports omit full source bodies, but still contain filenames, relationships and explanations.
+
+**Current web-demo boundary:** hosted ZIP uploads reach Vercel. Optional Supabase stores captured masked source in the configured cloud project. Secret masking is best effort and cannot undo an upload; deletion does not purge provider backups or downloaded copies. The public MVP has no user accounts or enterprise security assurance. Use public/sample code for the hosted demo. A local companion and stronger team controls remain future work.
+
+See [Privacy and trust](#privacy-and-trust) for the full data-flow breakdown and limitations. Live Supabase deletion still awaits verification against the owner’s separate project.
+
 ## Try the current MVP
 
 This repository contains the **Phase 6 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
@@ -243,7 +256,7 @@ SUPABASE_SECRET_KEY=YOUR_SERVER_SECRET_KEY
 
 New `sb_secret_...` keys are sent in the `apikey` header. Legacy service-role JWT keys are also supported. **Do not use an anonymous/publishable key here. Never prefix a secret with `NEXT_PUBLIC_`.**
 
-The migration enables RLS, removes browser-role table grants, and creates a private storage bucket with no browser access policy. The server key bypasses RLS, so the backend also filters **every read by the workspace identifier**.
+The migration enables RLS, removes browser-role table grants, and creates a private storage bucket with no browser access policy. The server key bypasses RLS, so the backend also scopes **every saved-scan read and deletion by the workspace identifier** and verifies the expected source-object key before deleting it.
 
 The workspace identifier is a random, HTTP-only, SameSite cookie lasting 30 days. It is an anonymous bearer capability, not an account. Clearing cookies or changing browser loses access to that workspace's saved scans. Account recovery, collaboration, and mature abuse controls are deferred.
 
