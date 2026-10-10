@@ -627,3 +627,7 @@ No Git history, commit attribution, automatic refresh, local watcher, feature-le
 ### Acceptance and verification
 
 35 backend tests, six browser-comparison logic tests, backend lint, frontend type checking and production build passed. Browser checks covered landing navigation, sample delta counts, version-correct source, changed relationship evidence, before/after declarations, same-snapshot selection and responsive controls. See [Phase 5 verification](phase-5-verification.md). Live OpenAI, Supabase and deployed behavior remain unverified without configuration. Next gate: Phase 6 demo completion, accessibility, export/deletion and reliability; hosting remains deferred.
+
+## Deployment amendment — 2026-10-10
+
+Hosting was separately authorized after Phase 5. The root `vercel.json` uses Vercel Services (beta), superseding the original two-project Vercel plan: public ingress targets only the Next.js frontend, whose server proxy calls the private FastAPI backend through `ARCHITECT_BACKEND_URL` supplied by a service binding. No public backend rewrite exists. The existing internal service secret and workspace checks remain. Both services build and ship in one deployment. Optional provider keys remain server-only and unconfigured. See the README and deployment verification report for actual live status. Phase 6 still awaits approval.

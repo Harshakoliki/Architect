@@ -47,7 +47,7 @@ These are the outcomes we are building toward and validating. We have not measur
 
 This repository contains the **Phase 5 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
 
-> **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. Captured-version comparison is implemented; GitHub ingestion, commit history and automatic refresh remain planned. Optional Supabase persistence awaits the owner's separate project. Hosting is deferred; hosted operation would send source to the server.
+> **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. Captured-version comparison is implemented; GitHub ingestion, commit history and automatic refresh remain planned. Optional Supabase persistence awaits the owner's separate project. Vercel deployment is in progress; hosted operation sends source to the server.
 
 ![Architect landing page — understand the product behind your code](outputs/architect-landing.jpg)
 
@@ -219,31 +219,23 @@ The migration enables RLS, removes browser-role table grants, and creates a priv
 
 The workspace identifier is a random, HTTP-only, SameSite cookie lasting 30 days. It is an anonymous bearer capability, not an account. Clearing cookies or changing browser loses access to that workspace's saved scans. Account recovery, collaboration, and mature abuse controls are deferred.
 
-## Vercel deployment plan — deferred by owner
+## Vercel deployment
 
-This repository is prepared for **two Vercel projects** from the same Git repository:
+The owner authorized hosting on 10 October 2026. Deployment is being verified; a URL is published here only after a successful end-to-end check.
 
-### 1. Python analysis service
+The root `vercel.json` deploys one **Vercel Services** project with two independently built services:
 
-- Root directory: `backend`
-- Framework: FastAPI; application export: `main.py` → `app`
-- Set `ARCHITECT_SERVICE_SECRET` to a new random value of at least 32 characters.
-- Optionally set the two Supabase variables above.
-- `backend/vercel.json` requests a 60-second function duration. Check the selected plan's limits.
+- **frontend:** Next.js from `frontend/`, receives all public paths, including the same-origin `/api` proxy.
+- **backend:** FastAPI from `backend/`, reachable only by the frontend’s service binding. There is no public rewrite to the backend.
+- Vercel injects `ARCHITECT_BACKEND_URL` into the frontend at runtime. Do not set this variable manually in Services mode.
+- Set one random **server-only** `ARCHITECT_SERVICE_SECRET` of at least 32 characters for Production and Preview. Both services receive it; the backend still verifies application-level authorization and workspace scope.
+- Optional `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `OPENAI_API_KEY` and `OPENAI_MODEL` can be configured privately. They must never use `NEXT_PUBLIC_`. Hosted operation sends source to Vercel; optional providers add their disclosed boundaries.
 
-### 2. Browser app
+Import `Harshakoliki/Architect`, choose the Services preset and repository root `./`, and deploy the reviewed main commit. This supersedes the original two-project setup. Services is currently beta, available across Vercel plans; usage is subject to the account’s included limits and service-request accounting. [Configuration](https://vercel.com/docs/services/config-reference), [bindings](https://vercel.com/docs/services/bindings), [pricing](https://vercel.com/docs/services/pricing).
 
-- Root directory: `frontend`
-- Framework: Next.js
-- Set `ARCHITECT_SERVICE_SECRET` to the same value as the backend.
-- Set `ARCHITECT_BACKEND_URL` to the Python service's HTTPS origin, without a trailing slash.
-- Do not set Supabase secrets on the frontend project.
+The 3 MiB ZIP limit leaves room beneath Vercel’s documented 4.5 MB request-body limit. Large scans need a direct private upload and a durable worker, which are deferred. This MVP has no user accounts, durable quotas or complete abuse controls. Use the bundled sample or a small public repository for a public demo; do not upload sensitive code.
 
-Use HTTPS. Keep the hackathon deployment private/protected when inspecting private code. If backend Vercel Deployment Protection is enabled, requests from the frontend need a supported protection bypass configuration; this proxy does not implement that yet. Do not mistake an untested deployment configuration for a verified live demo.
-
-The 3 MiB ZIP limit leaves room beneath Vercel's documented 4.5 MB request-body limit. Large scans need a direct private upload and a durable worker, which are deferred. The current API is not ready for unrestricted public uploads: there is no user account, durable quota, or complete abuse protection.
-
-**Deployment status:** no production or preview deployment has been verified yet. Local execution is the first demo path.
+**Deployment status:** verification in progress. OpenAI and Supabase remain unconfigured; the initial hosted demo uses temporary browser previews and the annotated no-key sample.
 
 ## Privacy and trust
 
@@ -286,7 +278,7 @@ After each phase, explain what works, demonstrate it, report checks and limitati
 
 ## Next product phase
 
-Phase 6 will finish the demo: review the complete journey, improve accessibility and readability, add evidence-aware export and saved-scan deletion, and check reliability. It requires the owner’s confirmation. Hosting remains deferred. GitHub ingestion and a local companion are separate later work.
+Phase 6 will finish the demo: review the complete journey, improve accessibility and readability, add evidence-aware export and saved-scan deletion, and check reliability. It requires the owner’s confirmation. Hosting has been separately authorized. GitHub ingestion and a local companion are separate later work.
 
 ## Verification
 
