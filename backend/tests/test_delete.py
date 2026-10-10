@@ -52,6 +52,8 @@ def test_delete_api_requires_boundary_uuid_and_workspace(client, monkeypatch):
         return True
     monkeypatch.setattr(db, 'delete', delete)
     assert client.delete(path).json() == {'deleted': path.rsplit('/', 1)[1]}
+    monkeypatch.setattr(db, 'delete', lambda *args: False)
+    assert client.delete(path).json() == {'deleted': path.rsplit('/', 1)[1]}
     def fail(*args):
         raise httpx.ConnectError('internal-secret')
     monkeypatch.setattr(db, 'delete', fail)

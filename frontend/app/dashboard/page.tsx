@@ -129,7 +129,7 @@ export default function Home() {
     setError(""); setBusy("Deleting saved scan and source");
     try {
       const response = await fetch(`/api/projects/${item.id}`, {method:"DELETE"});
-      if (response.status !== 404) await readResponse(response);
+      await readResponse(response);
       setSaved(previous=>previous.filter(value=>value.id !== item.id));
       setSnapshots(previous=>previous.filter(value=>value.id !== item.id));
       if (sourceProject?.id === item.id) {setSelected(null);setSourceProject(null);}

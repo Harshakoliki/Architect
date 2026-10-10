@@ -78,11 +78,9 @@ def delete_project(project_id: UUID, request: Request):
     if not db.configured():
         raise HTTPException(404, "No saved scans in preview mode.")
     try:
-        deleted = db.delete(request.state.workspace, str(project_id))
+        db.delete(request.state.workspace, str(project_id))
     except (httpx.HTTPError, ValueError, KeyError):
         raise HTTPException(503, "Deletion did not finish. Source may already be removed; retry to finish deleting the scan.") from None
-    if not deleted:
-        raise HTTPException(404, "Scan not found in this workspace.")
     return {"deleted": str(project_id)}
 
 

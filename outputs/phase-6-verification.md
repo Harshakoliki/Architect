@@ -4,7 +4,7 @@
 
 - Browser-generated evidence-linked Markdown and JSON, current source map and available product interpretation, capture identity, confidence, gaps and source hashes. Full source/snippet contents excluded; filenames and explanations included.
 - Readable component jump, fit control, larger card/connection labels, existing textual relationship alternative, focus styles and native source modal keyboard behavior.
-- Confirmed saved-scan deletion, scoped to the browser workspace, exact source object removed before metadata; explicit retryable partial failures. Local current/source/comparison references clear on success or already-missing response.
+- Confirmed saved-scan deletion, scoped to the browser workspace, exact source object removed before metadata; explicit retryable partial failures. Local current/source/comparison references clear on confirmed success (including an already-missing scan).
 - Consistent JSON outage handling across callers and safer scan cancellation state.
 
 ## Automated checks

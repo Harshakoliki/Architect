@@ -61,7 +61,7 @@ export default function ArchitectureMap({ graph, contents, mode, onSource, title
   const nodes: CardNode[] = shown.map(node => {
     const point = layout.get(node.id);
     const content = node.file_id ? contents[node.file_id] || "" : "";
-    return { id:node.id,type:"card",position:{x:point.x-119,y:point.y-82},data:{
+    return { id:node.id,type:"card",selected:focus === node.id,position:{x:point.x-119,y:point.y-82},data:{
       label:audience === "plain" && node.kind === "file" ? (node.label.split("/").pop() || node.label) : node.label,kind:node.kind,subtitle:audience === "plain" ? node.description || ({file:"Source file · select to inspect its connections",route:"A declared request handler",reference:"A referenced module",unresolved:"A reference we could not resolve"}[node.kind] || "Source-supported relationship") : node.evidence?.[0] ? `${node.evidence[0].path}:${node.evidence[0].start_line}` : node.language || node.description || "Declared source relationship",
       excerpt:audience === "technical" && node.kind === "file" ? content.split("\n").find(line => line.trim() && !line.trim().startsWith("//"))?.slice(0,70) || "" : "",
       active:highlighted.has(node.id),change:changes?.nodes[node.id],
@@ -70,7 +70,7 @@ export default function ArchitectureMap({ graph, contents, mode, onSource, title
   const edges = shownEdges.map(edge => {
     const active = selectedEdge ? edge.id === selectedEdge.id : focus ? edge.source === focus || edge.target === focus : false;
     const color = edge.confidence === "unknown" ? "#bc5d70" : active ? "#dc6674" : edge.confidence === "inferred" ? "#ad7b86" : "#8e4b59";
-    return {...edge,type:"smoothstep",label:audience === "plain" ? ({imports:"uses code from",references:"refers to module",unresolved:"unresolved reference",implemented_by:"handled by",http_candidate:"possible request"}[edge.kind] || edgeLabel(edge)) : edgeLabel(edge),
+    return {...edge,selected:edgeId === edge.id,type:"smoothstep",label:audience === "plain" ? ({imports:"uses code from",references:"refers to module",unresolved:"unresolved reference",implemented_by:"handled by",http_candidate:"possible request"}[edge.kind] || edgeLabel(edge)) : edgeLabel(edge),
       animated:active && moving,className:`${active ? "edge-active" : ""} ${changes?.edges[edge.id] ? `edge-change-${changes.edges[edge.id]}` : ""}`,focusable:true,
       markerEnd:{type:MarkerType.ArrowClosed,color,width:14,height:14},
       style:{stroke:color,strokeWidth:active || changes?.edges[edge.id] ? 2 : 1.3,opacity:highlighted.size && !active ? .25 : 1,
@@ -92,10 +92,8 @@ export default function ArchitectureMap({ graph, contents, mode, onSource, title
         onNodeClick={(_,node) => {setFocus(node.id);setEdgeId("");}}
         onEdgeClick={(_,edge) => {setEdgeId(edge.id);setFocus("");focusOn([edge.source,edge.target]);}}
         onPaneClick={() => {setFocus("");setEdgeId("");}}
-        onSelectionChange={({nodes:selectedNodes,edges:selectedEdges}) => {
-          if(selectedEdges.length){setEdgeId(selectedEdges[0].id);setFocus("");}
-          else if(selectedNodes.length){setFocus(selectedNodes[0].id);setEdgeId("");}
-        }}>
+        onNodesChange={items=>{for(const item of items) if(item.type === "select" && item.selected){setFocus(item.id);setEdgeId("");}}}
+        onEdgesChange={items=>{for(const item of items) if(item.type === "select" && item.selected){setEdgeId(item.id);setFocus("");}}}>
         <Background color="#3a3037" gap={22} size={.7}/><Controls showInteractive={false}/><MiniMap nodeColor={node => node.data.kind === "route" ? "#996577" : "#4d3b46"} pannable zoomable/>
       </ReactFlow> : <div className="graph-empty">{query ? "No supported relationships match this search." : "No supported source modules in this scan. The inventory remains available."}</div>}
       <div className="graph-legend">{mode === "product" ? <span><i className="inferred"/>Inferred · review source evidence</span> : <><span><i/>Observed</span><span><i className="inferred"/>Candidate</span><span><i className="unknown"/>Unresolved</span></>}</div>
