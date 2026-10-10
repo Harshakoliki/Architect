@@ -4,7 +4,7 @@
 
 **Turn “How does this work?” into a visual flow you can explore and check against the source.**
 
-**Repository:** [Harshakoliki/Architect](https://github.com/Harshakoliki/Architect)
+**Live demo:** [productarchitect.vercel.app](https://productarchitect.vercel.app) · **Repository:** [Harshakoliki/Architect](https://github.com/Harshakoliki/Architect)
 
 ## The problem: we can build software before we fully understand it
 
@@ -47,9 +47,9 @@ These are the outcomes we are building toward and validating. We have not measur
 
 This repository contains the **Phase 5 MVP checkpoint**. The no-key demo scans actual bundled source, displays charcoal wireframe cards with red connections, and demonstrates cited product flows and a limited sample question finder.
 
-> **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. Captured-version comparison is implemented; GitHub ingestion, commit history and automatic refresh remain planned. Optional Supabase persistence awaits the owner's separate project. Vercel deployment is in progress; hosted operation sends source to the server.
+> **Status — 10 October 2026:** architecture/dependency explorer, source inventory, evidence inspector, feature/source map, user journeys, data flows, flow questions, and Plain English / Technical presentation are implemented. OpenAI integration is tested with the actual SDK against mocked provider responses; **a live OpenAI call remains unverified because no API key is configured**. The no-key product example is hand-authored and its question finder uses limited lexical matching. Captured-version comparison is implemented; GitHub ingestion, commit history and automatic refresh remain planned. Optional Supabase persistence awaits the owner's separate project. Vercel production demo is live and checked; hosted operation sends source to the server.
 
-![Architect landing page — understand the product behind your code](outputs/architect-landing.jpg)
+![Architect landing page — understand the product behind your code](outputs/architect-live.jpg)
 
 ![Architect dashboard — code connections and supporting source](outputs/architect-dashboard.jpg)
 
@@ -221,7 +221,7 @@ The workspace identifier is a random, HTTP-only, SameSite cookie lasting 30 days
 
 ## Vercel deployment
 
-The owner authorized hosting on 10 October 2026. Deployment is being verified; a URL is published here only after a successful end-to-end check.
+**Production demo:** [https://productarchitect.vercel.app](https://productarchitect.vercel.app). Deployed and verified on 10 October 2026 in `Harsha Koliki’s projects` (Hobby), project `architect`.
 
 The root `vercel.json` deploys one **Vercel Services** project with two independently built services:
 
@@ -235,7 +235,7 @@ Import `Harshakoliki/Architect`, choose the Services preset and repository root 
 
 The 3 MiB ZIP limit leaves room beneath Vercel’s documented 4.5 MB request-body limit. Large scans need a direct private upload and a durable worker, which are deferred. This MVP has no user accounts, durable quotas or complete abuse controls. Use the bundled sample or a small public repository for a public demo; do not upload sensitive code.
 
-**Deployment status:** verification in progress. OpenAI and Supabase remain unconfigured; the initial hosted demo uses temporary browser previews and the annotated no-key sample.
+**Deployment status:** Ready. Hosted health, real public-fixture ZIP upload, invalid ZIP rejection, sample product views, flow questions, audience switching, and version-specific comparison evidence passed. OpenAI and Supabase remain unconfigured; the hosted demo uses temporary browser previews and the annotated no-key sample. See [deployment verification](outputs/deployment-verification.md).
 
 ## Privacy and trust
 
@@ -345,7 +345,7 @@ Research/configuration review as of **2026-10-10**:
 - [x] Publish the public repository: https://github.com/Harshakoliki/Architect
 - [x] Install dependencies and run both services locally on macOS; fresh-machine setup has not been independently checked.
 - [x] Include a screenshot or short recording of the real sample/upload flow.
-- [ ] Add a live URL only after deploying and testing it.
+- [x] Deploy and test the live URL: https://productarchitect.vercel.app
 - [x] Describe Phases 1–5 as implemented with live-AI verification explicitly pending and Phase 6 as planned.
 - [ ] Confirm the competition's own eligibility, disclosure, and submission rules.
 

@@ -20,8 +20,8 @@ The owner selected **Vercel + Supabase** after the initial local-web design belo
 
 ### Current stack and input
 
-- Next.js/TypeScript browser application and fixed-route server proxy, prepared for one Vercel project.
-- Python/FastAPI analysis service, prepared for a second Vercel project. Local development uses both processes on loopback.
+- Next.js/TypeScript browser application and fixed-route server proxy, plus a private Python/FastAPI analysis service.
+- One Vercel Services project builds both runtimes; all public ingress targets Next.js, which calls FastAPI over its internal binding. Local development still uses two loopback processes. See the deployment amendment at the end of this document.
 - ZIP ingestion first; no absolute-path endpoint is exposed to hosted browsers. Read-only GitHub App and local companion are separate later work.
 - Limits: 3 MiB compressed, 20 MiB declared expanded, 3,000 archive entries, 1 MiB per captured file. Reject unsafe/duplicate paths, symlinks, encrypted entries, and unreadable archives before analysis. Existing source ignore and redaction rules apply.
 - The original ZIP reaches the server. Credential-file exclusion happens after upload. UI must disclose this before submission of an archive.
@@ -48,7 +48,7 @@ Sample and uploaded source scan; actual languages/frameworks/counts appear; a 2D
 
 ### Deployment and submission
 
-Use `backend/` and `frontend/` as separate Vercel roots with matching internal service secrets and an HTTPS backend origin on the frontend. Preserve provider request/runtime constraints. README must include exact setup, data boundaries, demo steps, completed scope, deferred features, test results, and real repository/deployment URLs only after verification.
+Use the root `vercel.json` Services configuration: `frontend/` is public and `backend/` is internal, reached through a frontend binding. Set the shared server-only internal service secret; Vercel supplies the backend URL. Preserve provider request/runtime constraints. README must include exact setup, data boundaries, demo steps, completed scope, deferred features, test results, and real repository/deployment URLs only after verification.
 
 Current references: https://vercel.com/docs/frameworks/backend/fastapi ; https://vercel.com/docs/functions/limitations ; https://supabase.com/docs/guides/getting-started/api-keys ; https://supabase.com/docs/guides/storage/security/access-control .
 
@@ -631,3 +631,5 @@ No Git history, commit attribution, automatic refresh, local watcher, feature-le
 ## Deployment amendment — 2026-10-10
 
 Hosting was separately authorized after Phase 5. The root `vercel.json` uses Vercel Services (beta), superseding the original two-project Vercel plan: public ingress targets only the Next.js frontend, whose server proxy calls the private FastAPI backend through `ARCHITECT_BACKEND_URL` supplied by a service binding. No public backend rewrite exists. The existing internal service secret and workspace checks remain. Both services build and ship in one deployment. Optional provider keys remain server-only and unconfigured. See the README and deployment verification report for actual live status. Phase 6 still awaits approval.
+
+**Verified production URL:** https://productarchitect.vercel.app . Hosted ZIP analysis, sample product views/questions, audience switching and captured-version evidence passed on 10 October 2026; provider credentials remain unconfigured. See [deployment verification](deployment-verification.md).
